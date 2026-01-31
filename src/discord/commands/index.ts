@@ -1,61 +1,119 @@
 import {
-	ApplicationIntegrationType,
-	EntryPointCommandHandlerType,
-	InteractionContextType,
 	APIApplicationCommandOption,
+	APIApplicationCommandSubcommandGroupOption,
+	APIApplicationCommandSubcommandOption,
+	ApplicationCommandOptionType,
 	ApplicationCommandType,
+	InteractionResponseType,
 } from 'discord-api-types/v10';
+import {
+	ActivityCommand,
+	APIChatInputApplicationSubcommandInteraction,
+	ChatInputCommand,
+	ChatInputCommandParent,
+	ChatInputCommandParentParameters,
+	Command,
+	CommandParameters,
+	MessageCommand,
+	Subcommand,
+	SubcommandGroup,
+	SubcommandGroupParameters,
+	SubcommandParameters,
+	UserCommand,
+} from '../../types';
+import { fuckoffResponse, invalidInteractionResponse } from '../responses';
 
-export function command() {}
-
-type Command = ChatInputCommand | UserCommand | MessageCommand | ActivityCommand;
-
-/** Base Command Data used for creation  */
-interface BaseCommandData<CommandType extends ApplicationCommandType> {
-	/**  1-32 character name */
-	name: string;
-	/** Description for CHAT_INPUT commands, 1-100 characters. Empty string for USER and MESSAGE commands */
-	description: string;
-	type: CommandType;
-	/** Set of permissions represented as a bit set */
-	default_member_permissions: string;
-	/** Indicates whether the command is age-restricted, defaults to false */
-	nsfw?: Boolean;
-	/** Installation contexts where the command is available, only for globally-scoped commands. Defaults to your app's configured contexts */
-	integration_types?: ApplicationIntegrationType[];
-	/** Interaction context(s) where the command can be used, only for globally-scoped commands. */
-	contexts?: InteractionContextType[];
+export function command(command: CommandParameters): Command {
+	switch (command.data.type) {
+		case ApplicationCommandType.ChatInput: {
+			if ('subcommands' in command || 'subcommandGroups' in command) {
+				return parentCommand(command);
+			}
+			return {
+				...command,
+			} as ChatInputCommand;
+		}
+		case ApplicationCommandType.User:
+			return {
+				...command,
+			} as UserCommand;
+		case ApplicationCommandType.Message:
+			return {
+				...command,
+			} as MessageCommand;
+		case ApplicationCommandType.PrimaryEntryPoint:
+			return {
+				...command,
+			} as ActivityCommand;
+	}
 }
 
-interface ChatInputCommandData extends BaseCommandData<ApplicationCommandType.ChatInput> {
-	/** Parameters for the command, max of 25 */
-	options?: APIApplicationCommandOption[];
+function parentCommand(command: ChatInputCommandParentParameters): ChatInputCommandParent {
+	const parentCommand = command as ChatInputCommandParent;
+	parentCommand.data.options = [];
+	if (parentCommand.subcommands) {
+		const subcommandOptions = completeSubcommandOptions(parentCommand.subcommands);
+		parentCommand.data.options.push(...subcommandOptions);
+	}
+	if (parentCommand.subcommandGroups) {
+		const subcommandGroupOptions = completeSubcommandGroupOptions(parentCommand.subcommandGroups);
+		parentCommand.data.options.push(...subcommandGroupOptions);
+	}
+	parentCommand.execute = async (interaction, env, ctx) => {
+		if (interaction.data.options[0].type === ApplicationCommandOptionType.Subcommand) {
+			const subcommandName = interaction.data.options[0].name;
+			const subcommand = parentCommand.subcommands.find((sc) => sc.data.name === subcommandName);
+			if (subcommand) {
+				return subcommand.execute(interaction, env, ctx);
+			}
+			return invalidInteractionResponse();
+		}
+		const subcommandGroupName = interaction.data.options[0].name;
+		const subcommandGroup = parentCommand.subcommandGroups.find((scg) => scg.data.name === subcommandGroupName);
+		if (subcommandGroup) {
+			const subcommandName = interaction.data.options[0].options[0].name;
+			const subcommand = subcommandGroup.subcommands.find((sc) => sc.data.name === subcommandName);
+			if (subcommand) {
+				return subcommand.execute(interaction, env, ctx);
+			}
+			return invalidInteractionResponse();
+		}
+		return invalidInteractionResponse();
+	};
+	return parentCommand;
 }
 
-interface UserCommandData extends BaseCommandData<ApplicationCommandType.User> {
-	options: never;
+export function subcommand(command: SubcommandParameters): Subcommand {
+	return command;
 }
 
-interface MessageCommandData extends BaseCommandData<ApplicationCommandType.Message> {
-	options: never;
+export function subcommandGroup(command: SubcommandGroupParameters): SubcommandGroup {
+	return {
+		...command,
+		data: {
+			name: command.data.name,
+			type: ApplicationCommandOptionType.SubcommandGroup,
+			description: command.data.description,
+			options: completeSubcommandOptions(command.subcommands),
+		},
+	};
 }
 
-interface ActivityCommandData extends BaseCommandData<ApplicationCommandType.PrimaryEntryPoint> {
-	options: never;
-	/** Determines whether the interaction is handled by the app's interactions handler or by Discord */
-	handler?: EntryPointCommandHandlerType;
+function completeSubcommandOptions(subcommands: Subcommand[]): APIApplicationCommandSubcommandOption[] {
+	let options: APIApplicationCommandSubcommandOption[] = [];
+	for (const subcommand of subcommands) {
+		options.push(subcommand.data);
+	}
+	return options;
 }
-
-/**  Base used for creation of Command Interfaces */
-interface BaseCommand<CommandData> {
-	/** Data used for registration of the Command */
-	data: CommandData;
+function completeSubcommandGroupOptions(
+	subcommandGroups: SubcommandGroup[],
+): APIApplicationCommandSubcommandGroupOption[] | APIApplicationCommandSubcommandGroupOption[] {
+	let options = [];
+	for (const subcommandGroup of subcommandGroups) {
+		let subcommandOptions = completeSubcommandOptions(subcommandGroup.subcommands);
+		subcommandGroup.data.options = subcommandOptions;
+		options.push(subcommandGroup.data);
+	}
+	return options;
 }
-
-interface ChatInputCommand extends BaseCommand<ChatInputCommandData> {}
-
-interface UserCommand extends BaseCommand<UserCommandData> {}
-
-interface MessageCommand extends BaseCommand<MessageCommandData> {}
-
-interface ActivityCommand extends BaseCommand<ActivityCommandData> {}
