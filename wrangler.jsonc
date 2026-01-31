@@ -8,8 +8,25 @@
 	"main": "src/index.ts",
 	"compatibility_date": "2025-09-27",
 	"observability": {
-		"enabled": true
-	}
+		"enabled": true,
+	},
+	"secrets_store_secrets": [
+		{
+			"binding": "discordApiKey",
+			"secret_name": "DISCORD_API_KEY",
+			"store_id": "placeholder",
+		},
+		{
+			"binding": "discordPublicKey",
+			"secret_name": "DISCORD_PUBLIC_KEY",
+			"store_id": "placeholder",
+		},
+		{
+			"binding": "discordAppId",
+			"secret_name": "DISCORD_APP_ID",
+			"store_id": "placeholder",
+		},
+	],
 	/**
 	 * Smart Placement
 	 * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement

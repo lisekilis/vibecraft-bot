@@ -10,9 +10,17 @@
  *
  * Learn more at https://developers.cloudflare.com/workers/
  */
+import interactionHandler from './discord';
 
 export default {
 	async fetch(request, env, ctx): Promise<Response> {
-		return new Response('Hello World!');
+		const url = new URL(request.url);
+		const path = url.pathname;
+		const method = request.method;
+		const pathParts = path.slice(1).split('/');
+
+		if (pathParts[0] === 'interactions' && method === 'POST') return interactionHandler(request, env);
+
+		return new Response('Not Found', { status: 404 });
 	},
 } satisfies ExportedHandler<Env>;
