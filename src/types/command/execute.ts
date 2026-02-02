@@ -1,8 +1,9 @@
 import {
+	APIApplicationCommandInteraction,
 	APIChatInputApplicationCommandInteraction,
-	APIInteraction,
 	APIInteractionResponse,
 	APIMessageApplicationCommandInteraction,
+	APIMessageComponentInteraction,
 	APIPrimaryEntryPointCommandInteraction,
 	APIUserApplicationCommandInteraction,
 } from 'discord-api-types/v10';
@@ -12,7 +13,7 @@ import {
 	APIChatInputApplicationCommandParentInteraction,
 } from '.';
 
-export interface BaseCommandExecute<Interaction extends APIInteraction> {
+export interface BaseCommandExecute<Interaction extends APIApplicationCommandInteraction> {
 	(interaction: Interaction, env: Env, ctx: ExecutionContext): Promise<APIInteractionResponse>;
 }
 
@@ -37,3 +38,7 @@ export interface ChatInputCommandParentWithSubcommandGroupsExecute extends BaseC
 // export interface subcommands extends BaseCommandExecute<APIChatInputApplicationSubcommandInteraction> {}
 
 // export interface ChatInputGroupSubcommandExecute extends BaseCommandExecute<APIChatInputApplicationGroupSubcommandInteraction> {}
+
+export interface ComponentExecute<Interaction extends APIMessageComponentInteraction> {
+	(interaction: Interaction, env: Env, ctx: ExecutionContext): Promise<APIInteractionResponse>;
+}
