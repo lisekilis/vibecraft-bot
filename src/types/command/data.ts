@@ -4,6 +4,7 @@ import {
 	ApplicationIntegrationType,
 	EntryPointCommandHandlerType,
 	InteractionContextType,
+	Permissions,
 } from 'discord-api-types/v10';
 
 /** Base Command Data used for creation  of Command Data Interfaces */
@@ -18,7 +19,7 @@ export interface BaseCommandData<
 	/** The type of command */
 	type: CommandType;
 	/** Set of permissions represented as a bit set */
-	default_member_permissions: string;
+	default_member_permissions?: Permissions;
 	/** Indicates whether the command is age-restricted, defaults to false */
 	nsfw?: Boolean;
 	/** Installation contexts where the command is available, only for globally-scoped commands. Defaults to your app's configured contexts */

@@ -83,6 +83,5 @@ export interface Subcommand extends BaseCommand<APIApplicationCommandSubcommandO
 }
 
 export interface SubcommandGroup extends BaseCommand<APIApplicationCommandSubcommandGroupOption> {
-	execute: never;
 	subcommands: Subcommand[];
 }

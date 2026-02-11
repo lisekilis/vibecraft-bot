@@ -1,5 +1,6 @@
 import {
 	APIApplicationCommandBasicOption,
+	APIApplicationCommandGuildInteraction,
 	APIApplicationCommandOption,
 	APIApplicationCommandSubcommandGroupOption,
 	APIApplicationCommandSubcommandOption,
@@ -35,24 +36,28 @@ export interface ChatInputCommandParameters extends BaseCommandParameters<
 	ApplicationCommandType.ChatInput,
 	APIApplicationCommandBasicOption[]
 > {
+	type: ApplicationCommandType.ChatInput;
 	execute: ChatInputCommandExecute;
 }
 
 export interface ChatInputCommandParentParameters extends BaseCommandParameters<ApplicationCommandType.ChatInput, never> {
-	execute: never;
+	type: ApplicationCommandType.ChatInput;
 	subcommands?: Subcommand[];
 	subcommandGroups?: SubcommandGroup[];
 }
 
 export interface UserCommandParameters extends BaseCommandParameters<ApplicationCommandType.User> {
+	type: ApplicationCommandType.User;
 	execute: UserCommandExecute;
 }
 
 export interface MessageCommandParameters extends BaseCommandParameters<ApplicationCommandType.Message> {
+	type: ApplicationCommandType.Message;
 	execute: MessageCommandExecute;
 }
 
 export interface ActivityCommandParameters extends BaseCommandParameters<ApplicationCommandType.PrimaryEntryPoint> {
+	type: ApplicationCommandType.PrimaryEntryPoint;
 	/** Determines whether the interaction is handled by the app's interactions handler or by Discord */
 	handler?: EntryPointCommandHandlerType;
 	execute?: ActivityCommandExecute;
@@ -69,6 +74,7 @@ export interface SubcommandParameters extends BaseSubcommandParameters<APIApplic
 }
 
 export interface SubcommandGroupParameters extends BaseSubcommandParameters<APIApplicationCommandSubcommandGroupOption> {
-	execute: never;
 	subcommands: Subcommand[];
 }
+
+// interface ds extends APIApplicationCommandGuildInteraction

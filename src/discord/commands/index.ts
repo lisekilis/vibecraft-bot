@@ -22,7 +22,7 @@ import {
 	SubcommandParameters,
 	UserCommand,
 } from '../../types';
-import { invalidInteractionResponse } from '../responses';
+import { invalidInteractionResponse } from '../util/responses';
 
 export default function (interaction: APIInteraction, env: Env, ctx: ExecutionContext) {
 	const interactionType = interaction.type;
@@ -47,11 +47,12 @@ export default function (interaction: APIInteraction, env: Env, ctx: ExecutionCo
 }
 
 export function command(command: CommandParameters): Command {
-	switch (command.data.type) {
+	switch (command.type) {
 		case ApplicationCommandType.ChatInput: {
-			if ('subcommands' in command || 'subcommandGroups' in command) {
+			if (!('execute' in command)) {
 				return parentCommand(command);
 			}
+			const exec = command.execute;
 			return {
 				...command,
 			} as ChatInputCommand;
@@ -72,7 +73,7 @@ export function command(command: CommandParameters): Command {
 }
 
 function parentCommand(command: ChatInputCommandParentParameters): ChatInputCommandParent {
-	const parentCommand = command as ChatInputCommandParent;
+	const parentCommand = command as unknown as ChatInputCommandParent;
 	parentCommand.data.options = [];
 	if (parentCommand.subcommands) {
 		const subcommandOptions = completeSubcommandOptions(parentCommand.subcommands);
@@ -145,7 +146,7 @@ async function executeCommand(interaction: APIApplicationCommandInteraction, env
 	const commandName = interaction.data.name;
 	const command = await importCommandModule(commandName);
 	if (command) {
-		return command.execute(interaction, env, ctx);
+		return command.execute(interaction as any, env, ctx); //TODO: fix this any
 	} else {
 		return invalidInteractionResponse();
 	}
