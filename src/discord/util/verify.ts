@@ -1,4 +1,11 @@
-import { APIInteractionGuildMember, PermissionFlagsBits } from 'discord-api-types/v10';
+import { APIInteractionGuildMember, APIUser, PermissionFlagsBits } from 'discord-api-types/v10';
+
+export function verifyUser(user: APIUser, userID: string): boolean {
+	if (user.id === userID) {
+		return true;
+	}
+	return false;
+}
 
 export function verifyAdmin(user: APIInteractionGuildMember): boolean {
 	if (user.permissions === undefined) {

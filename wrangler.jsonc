@@ -26,6 +26,17 @@
 			"secret_name": "DISCORD_APP_ID",
 			"store_id": "placeholder",
 		},
+		{
+			"binding": "globalAdmin",
+			"secret_name": "BOT_GLOBAL_ADMIN",
+			"store_id": "placeholder",
+		},
+	],
+	"kv_namespaces": [
+		{
+			"binding": "config",
+			"id": "placeholder",
+		},
 	],
 	/**
 	 * Smart Placement

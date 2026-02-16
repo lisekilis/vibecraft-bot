@@ -25,14 +25,11 @@ export interface BaseCommandParameters<
 	data: BaseCommandData<CommandType, Options>;
 }
 
-export type CommandParameters =
-	| ChatInputCommandParameters
-	| ChatInputCommandParentParameters
-	| UserCommandParameters
-	| MessageCommandParameters
-	| ActivityCommandParameters;
+export type CommandParameters = ChatInputCommandParameters | UserCommandParameters | MessageCommandParameters | ActivityCommandParameters;
 
-export interface ChatInputCommandParameters extends BaseCommandParameters<
+export type ChatInputCommandParameters = ChatInputCommandBasicParameters | ChatInputCommandParentParameters;
+
+export interface ChatInputCommandBasicParameters extends BaseCommandParameters<
 	ApplicationCommandType.ChatInput,
 	APIApplicationCommandBasicOption[]
 > {
