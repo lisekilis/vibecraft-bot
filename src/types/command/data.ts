@@ -6,6 +6,7 @@ import {
 	InteractionContextType,
 	Permissions,
 } from 'discord-api-types/v10';
+import { Command } from '.';
 
 /** Base Command Data used for creation  of Command Data Interfaces */
 export interface BaseCommandData<
@@ -15,7 +16,11 @@ export interface BaseCommandData<
 	/**  1-32 character name */
 	name: string;
 	/** Description for CHAT_INPUT commands, 1-100 characters. Empty string for USER and MESSAGE commands */
-	description: string;
+	description: CommandType extends ApplicationCommandType.ChatInput
+		? string
+		: CommandType extends ApplicationCommandType.PrimaryEntryPoint
+			? never
+			: '';
 	/** The type of command */
 	type: CommandType;
 	/** Set of permissions represented as a bit set */

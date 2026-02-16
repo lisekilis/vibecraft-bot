@@ -7,3 +7,9 @@ export interface GuildConfig {
 export const defaultConfig: GuildConfig = {
 	moderatorRoleID: undefined,
 };
+
+export interface UserData {
+	minecraftUsername: string;
+	minecraftUUID: string;
+	xboxUUID: string;
+}

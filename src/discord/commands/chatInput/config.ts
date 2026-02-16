@@ -3,11 +3,9 @@ import {
 	ApplicationCommandType,
 	ApplicationIntegrationType,
 	InteractionContextType,
-	InteractionResponseType,
-	MessageFlags,
 } from 'discord-api-types/v10';
 import { command, subcommand, subcommandGroup } from '.';
-import { ephemeralResponse, messageResponse } from '../../util/responses';
+import { ephemeralResponse } from '../../util/responses';
 import { verifyAdmin } from '../../util/verify';
 import { isGuildInteraction } from 'discord-api-types/utils';
 import { patchConfig } from '../../../helpers/config';

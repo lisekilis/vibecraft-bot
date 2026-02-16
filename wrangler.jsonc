@@ -37,7 +37,12 @@
 			"binding": "config",
 			"id": "placeholder",
 		},
+		{
+			"binding": "users",
+			"id": "placeholder",
+		},
 	],
+
 	/**
 	 * Smart Placement
 	 * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement

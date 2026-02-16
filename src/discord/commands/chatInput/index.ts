@@ -2,17 +2,14 @@ import {
 	APIApplicationCommandInteraction,
 	APIApplicationCommandSubcommandGroupOption,
 	APIApplicationCommandSubcommandOption,
-	APIInteraction,
 	APIMessageComponentInteraction,
 	ApplicationCommandOptionType,
 	ApplicationCommandType,
-	InteractionType,
 } from 'discord-api-types/v10';
 import {
 	ActivityCommand,
 	ChatInputCommand,
 	ChatInputCommandBasicParameters,
-	ChatInputCommandParameters,
 	ChatInputCommandParent,
 	ChatInputCommandParentParameters,
 	Command,
