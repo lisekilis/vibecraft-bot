@@ -2,6 +2,7 @@ import {
 	APIApplicationCommandOption,
 	APIApplicationCommandSubcommandGroupOption,
 	APIApplicationCommandSubcommandOption,
+	APIMessageComponentInteraction,
 } from 'discord-api-types/v10';
 import { ChatInputCommandData, UserCommandData, MessageCommandData, ActivityCommandData } from './data';
 import {
@@ -13,6 +14,7 @@ import {
 	ChatInputCommandParentExecute,
 	ChatInputCommandParentWithSubcommandsExecute,
 	ChatInputCommandParentWithSubcommandGroupsExecute,
+	ComponentExecute,
 } from './execute';
 
 export * from './data';
@@ -31,6 +33,7 @@ export interface BaseCommand<CommandData> {
 
 export interface ChatInputCommand extends BaseCommand<ChatInputCommandData<APIApplicationCommandOption>> {
 	execute: ChatInputCommandExecute;
+	executeComponent?: ComponentExecute<APIMessageComponentInteraction>;
 }
 
 export interface ChatInputCommandParentWithSubcommands extends BaseCommand<ChatInputCommandData<APIApplicationCommandSubcommandOption>> {
@@ -68,10 +71,12 @@ export interface ChatInputCommandParent extends BaseCommand<
 
 export interface UserCommand extends BaseCommand<UserCommandData> {
 	execute: UserCommandExecute;
+	executeComponent?: ComponentExecute<APIMessageComponentInteraction>;
 }
 
 export interface MessageCommand extends BaseCommand<MessageCommandData> {
 	execute: MessageCommandExecute;
+	executeComponent?: ComponentExecute<APIMessageComponentInteraction>;
 }
 
 export interface ActivityCommand extends BaseCommand<ActivityCommandData> {
@@ -80,6 +85,7 @@ export interface ActivityCommand extends BaseCommand<ActivityCommandData> {
 
 export interface Subcommand extends BaseCommand<APIApplicationCommandSubcommandOption> {
 	execute: ChatInputSubcommandExecute;
+	executeComponent?: ComponentExecute<APIMessageComponentInteraction>;
 }
 
 export interface SubcommandGroup extends BaseCommand<APIApplicationCommandSubcommandGroupOption> {

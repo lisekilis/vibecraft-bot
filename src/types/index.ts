@@ -9,7 +9,16 @@ export const defaultConfig: GuildConfig = {
 };
 
 export interface UserData {
+	xboxAccounts?: XboxUserData[];
+}
+
+export interface XboxUserData {
+	xboxUUID: string;
+	xboxGamertag: string;
+	minecraftAccount?: minecraftUserData;
+}
+
+export interface minecraftUserData {
 	minecraftUsername: string;
 	minecraftUUID: string;
-	xboxUUID: string;
 }

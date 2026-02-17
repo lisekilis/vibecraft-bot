@@ -4,6 +4,7 @@ import {
 	APIApplicationCommandOption,
 	APIApplicationCommandSubcommandGroupOption,
 	APIApplicationCommandSubcommandOption,
+	APIMessageComponentInteraction,
 	ApplicationCommandType,
 	EntryPointCommandHandlerType,
 } from 'discord-api-types/v10';
@@ -12,6 +13,7 @@ import {
 	BaseCommandData,
 	ChatInputCommandExecute,
 	ChatInputSubcommandExecute,
+	ComponentExecute,
 	MessageCommandExecute,
 	Subcommand,
 	SubcommandGroup,
@@ -35,6 +37,7 @@ export interface ChatInputCommandBasicParameters extends BaseCommandParameters<
 > {
 	type: ApplicationCommandType.ChatInput;
 	execute: ChatInputCommandExecute;
+	executeComponent?: ComponentExecute<APIMessageComponentInteraction>;
 }
 
 export interface ChatInputCommandParentParameters extends BaseCommandParameters<ApplicationCommandType.ChatInput, never> {
@@ -46,11 +49,13 @@ export interface ChatInputCommandParentParameters extends BaseCommandParameters<
 export interface UserCommandParameters extends BaseCommandParameters<ApplicationCommandType.User> {
 	type: ApplicationCommandType.User;
 	execute: UserCommandExecute;
+	executeComponent?: ComponentExecute<APIMessageComponentInteraction>;
 }
 
 export interface MessageCommandParameters extends BaseCommandParameters<ApplicationCommandType.Message> {
 	type: ApplicationCommandType.Message;
 	execute: MessageCommandExecute;
+	executeComponent?: ComponentExecute<APIMessageComponentInteraction>;
 }
 
 export interface ActivityCommandParameters extends BaseCommandParameters<ApplicationCommandType.PrimaryEntryPoint> {
@@ -68,6 +73,7 @@ export interface BaseSubcommandParameters<
 
 export interface SubcommandParameters extends BaseSubcommandParameters<APIApplicationCommandSubcommandOption> {
 	execute: ChatInputSubcommandExecute;
+	executeComponent?: ComponentExecute<APIMessageComponentInteraction>;
 }
 
 export interface SubcommandGroupParameters extends BaseSubcommandParameters<APIApplicationCommandSubcommandGroupOption> {

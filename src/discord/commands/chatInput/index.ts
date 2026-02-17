@@ -143,7 +143,7 @@ async function executeCommand(interaction: APIApplicationCommandInteraction, env
 	}
 }
 
-function executeComponent(interaction: APIMessageComponentInteraction, env: Env, ctx: ExecutionContext) {
+async function executeComponent(interaction: APIMessageComponentInteraction, env: Env, ctx: ExecutionContext) {
 	const customId = interaction.data.custom_id;
 	const commandName = customId.split(':')[0];
 }
