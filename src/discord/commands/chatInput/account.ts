@@ -10,9 +10,21 @@ const add = subcommand({
 		type: ApplicationCommandOptionType.Subcommand,
 	},
 	execute: async (interaction) => {
-		const component:MessageComponent = {
-			type: MessageComponentTypes.
-		}
+		const component: MessageComponent = {
+			type: MessageComponentTypes.CONTAINER,
+			components: [
+				{
+					type: MessageComponentTypes.TEXT_DISPLAY,
+					content: 'To link your Minecraft account, please click the button below and follow the instructions.',
+				},
+				{
+					type: MessageComponentTypes.BUTTON,
+					label: 'Link Account',
+					style: 1,
+					custom_id: 'link_account',
+				},
+			],
+		};
 		return messageResponse('This command is not implemented yet');
 	},
 	executeComponent: async (interaction) => {
