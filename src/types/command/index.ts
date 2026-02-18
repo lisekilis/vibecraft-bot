@@ -31,7 +31,7 @@ export interface BaseCommand<CommandData> {
 	/** Data used for registration of the Command */
 	data: CommandData;
 	/** The type of command, used for type narrowing */
-	type: ApplicationCommandType;
+	type: CommandData extends APIApplicationCommandOption ? never : ApplicationCommandType;
 	/** Optional component execution function */
 	executeComponent?: CommandData extends ActivityCommandData ? never : ComponentExecute<APIMessageComponentInteraction>;
 }

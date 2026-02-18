@@ -99,7 +99,7 @@ function parentCommand(command: ChatInputCommandParentParameters): ChatInputComm
 }
 
 export function subcommand(command: SubcommandParameters): Subcommand {
-	return command;
+	return command as Subcommand;
 }
 
 export function subcommandGroup(command: SubcommandGroupParameters): SubcommandGroup {
@@ -111,7 +111,7 @@ export function subcommandGroup(command: SubcommandGroupParameters): SubcommandG
 			description: command.data.description,
 			options: completeSubcommandOptions(command.subcommands),
 		},
-	};
+	} as SubcommandGroup;
 }
 
 function completeSubcommandOptions(subcommands: Subcommand[]): APIApplicationCommandSubcommandOption[] {
