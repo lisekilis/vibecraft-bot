@@ -1,7 +1,7 @@
 import { ApplicationCommandOptionType, ApplicationCommandType } from 'discord-api-types/v10';
 import { command, subcommand } from '.';
 import { messageResponse } from '../../util/responses';
-import { MessageComponent, MessageComponentTypes } from 'discord-interactions';
+import { ButtonStyleTypes, MessageComponent, MessageComponentTypes } from 'discord-interactions';
 
 const add = subcommand({
 	data: {
@@ -9,7 +9,12 @@ const add = subcommand({
 		description: 'Add your Minecraft account to your Discord account',
 		type: ApplicationCommandOptionType.Subcommand,
 	},
-	execute: async (interaction) => {
+	execute: async (interaction, env, ctx, reqUrl) => {
+		const origin = reqUrl.origin;
+		const user = interaction.member?.user || interaction.user;
+		const userID = user!.id;
+		const linkUrl = `${origin}/link?discordId=${userID}`;
+
 		const component: MessageComponent = {
 			type: MessageComponentTypes.CONTAINER,
 			components: [
@@ -20,8 +25,8 @@ const add = subcommand({
 				{
 					type: MessageComponentTypes.BUTTON,
 					label: 'Link Account',
-					style: 1,
-					custom_id: 'link_account',
+					style: ButtonStyleTypes.LINK,
+					url: linkUrl,
 				},
 			],
 		};

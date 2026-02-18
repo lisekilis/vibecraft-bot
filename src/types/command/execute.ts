@@ -14,7 +14,7 @@ import {
 } from '.';
 
 export interface BaseCommandExecute<Interaction extends APIApplicationCommandInteraction> {
-	(interaction: Interaction, env: Env, ctx: ExecutionContext): Promise<APIInteractionResponse>;
+	(interaction: Interaction, env: Env, ctx: ExecutionContext, reqUrl: URL): Promise<APIInteractionResponse>;
 }
 
 export interface ChatInputCommandExecute extends BaseCommandExecute<APIChatInputApplicationCommandInteraction> {}
@@ -40,5 +40,5 @@ export interface ChatInputCommandParentWithSubcommandGroupsExecute extends BaseC
 // export interface ChatInputGroupSubcommandExecute extends BaseCommandExecute<APIChatInputApplicationGroupSubcommandInteraction> {}
 
 export interface ComponentExecute<Interaction extends APIMessageComponentInteraction> {
-	(interaction: Interaction, env: Env, ctx: ExecutionContext): Promise<APIInteractionResponse>;
+	(interaction: Interaction, env: Env, ctx: ExecutionContext, reqUrl: URL): Promise<APIInteractionResponse>;
 }

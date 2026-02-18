@@ -10,6 +10,7 @@
  *
  * Learn more at https://developers.cloudflare.com/workers/
  */
+import { linkHandler } from './accounts';
 import interactionHandler from './discord';
 
 export default {
@@ -19,7 +20,8 @@ export default {
 		const method = request.method;
 		const pathParts = path.slice(1).split('/');
 
-		if (pathParts[0] === 'interactions' && method === 'POST') return interactionHandler(request, env);
+		if (pathParts[0] === 'interactions' && method === 'POST') return interactionHandler(request, env, ctx);
+		if (pathParts[0] === 'link' && method === 'GET') return linkHandler(request, env);
 
 		return new Response('Not Found', { status: 404 });
 	},

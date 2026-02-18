@@ -74,12 +74,12 @@ function parentCommand(command: ChatInputCommandParentParameters): ChatInputComm
 		const subcommandGroupOptions = completeSubcommandGroupOptions(parentCommand.subcommandGroups);
 		parentCommand.data.options.push(...subcommandGroupOptions);
 	}
-	parentCommand.execute = async (interaction, env, ctx) => {
+	parentCommand.execute = async (interaction, env, ctx, reqUrl) => {
 		if (interaction.data.options[0].type === ApplicationCommandOptionType.Subcommand) {
 			const subcommandName = interaction.data.options[0].name;
 			const subcommand = parentCommand.subcommands?.find((sc) => sc.data.name === subcommandName);
 			if (subcommand) {
-				return subcommand.execute(interaction, env, ctx);
+				return subcommand.execute(interaction, env, ctx, reqUrl);
 			}
 			return invalidInteractionResponse();
 		}
@@ -89,7 +89,7 @@ function parentCommand(command: ChatInputCommandParentParameters): ChatInputComm
 			const subcommandName = interaction.data.options[0].options[0].name;
 			const subcommand = subcommandGroup.subcommands.find((sc) => sc.data.name === subcommandName);
 			if (subcommand) {
-				return subcommand.execute(interaction, env, ctx);
+				return subcommand.execute(interaction, env, ctx, reqUrl);
 			}
 			return invalidInteractionResponse();
 		}
@@ -133,17 +133,17 @@ function completeSubcommandGroupOptions(
 	return options;
 }
 
-async function executeCommand(interaction: APIApplicationCommandInteraction, env: Env, ctx: ExecutionContext) {
+async function executeCommand(interaction: APIApplicationCommandInteraction, env: Env, ctx: ExecutionContext, reqUrl: URL) {
 	const commandName = interaction.data.name;
 	const command = await importCommandModule(commandName);
 	if (command) {
-		return command.execute(interaction as any, env, ctx); //TODO: fix this any
+		return command.execute(interaction as any, env, ctx, reqUrl); //TODO: fix this any
 	} else {
 		return invalidInteractionResponse();
 	}
 }
 
-async function executeComponent(interaction: APIMessageComponentInteraction, env: Env, ctx: ExecutionContext) {
+async function executeComponent(interaction: APIMessageComponentInteraction, env: Env, ctx: ExecutionContext, reqUrl: URL) {
 	const customId = interaction.data.custom_id;
 	const commandName = customId.split(':')[0];
 }

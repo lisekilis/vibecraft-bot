@@ -3,6 +3,7 @@ import {
 	APIApplicationCommandSubcommandGroupOption,
 	APIApplicationCommandSubcommandOption,
 	APIMessageComponentInteraction,
+	ApplicationCommandType,
 } from 'discord-api-types/v10';
 import { ChatInputCommandData, UserCommandData, MessageCommandData, ActivityCommandData } from './data';
 import {
@@ -29,14 +30,19 @@ export type Command = ChatInputCommand | ChatInputCommandParent | UserCommand | 
 export interface BaseCommand<CommandData> {
 	/** Data used for registration of the Command */
 	data: CommandData;
+	/** The type of command, used for type narrowing */
+	type: ApplicationCommandType;
+	/** Optional component execution function */
+	executeComponent?: CommandData extends ActivityCommandData ? never : ComponentExecute<APIMessageComponentInteraction>;
 }
 
 export interface ChatInputCommand extends BaseCommand<ChatInputCommandData<APIApplicationCommandOption>> {
+	type: ApplicationCommandType.ChatInput;
 	execute: ChatInputCommandExecute;
-	executeComponent?: ComponentExecute<APIMessageComponentInteraction>;
 }
 
 export interface ChatInputCommandParentWithSubcommands extends BaseCommand<ChatInputCommandData<APIApplicationCommandSubcommandOption>> {
+	type: ApplicationCommandType.ChatInput;
 	execute: ChatInputCommandParentWithSubcommandsExecute;
 	subcommands: Subcommand[];
 	subcommandGroups?: never;
@@ -45,12 +51,14 @@ export interface ChatInputCommandParentWithSubcommands extends BaseCommand<ChatI
 export interface ChatInputCommandParentWithSubcommandGroups extends BaseCommand<
 	ChatInputCommandData<APIApplicationCommandSubcommandGroupOption>
 > {
+	type: ApplicationCommandType.ChatInput;
 	execute: ChatInputCommandParentWithSubcommandGroupsExecute;
 	subcommands?: never;
 	subcommandGroups: SubcommandGroup[];
 }
 
 export interface ChatInputCommandParentWithBoth extends BaseCommand<ChatInputCommandData<APIApplicationCommandOption>> {
+	type: ApplicationCommandType.ChatInput;
 	execute: ChatInputCommandParentWithSubcommandsExecute | ChatInputCommandParentWithSubcommandGroupsExecute;
 	subcommands: Subcommand[];
 	subcommandGroups: SubcommandGroup[];
@@ -64,22 +72,25 @@ export interface ChatInputCommandParentWithBoth extends BaseCommand<ChatInputCom
 export interface ChatInputCommandParent extends BaseCommand<
 	ChatInputCommandData<APIApplicationCommandSubcommandOption | APIApplicationCommandSubcommandGroupOption>
 > {
+	type: ApplicationCommandType.ChatInput;
 	execute: ChatInputCommandParentExecute;
 	subcommands?: Subcommand[];
 	subcommandGroups?: SubcommandGroup[];
 }
 
 export interface UserCommand extends BaseCommand<UserCommandData> {
+	type: ApplicationCommandType.User;
 	execute: UserCommandExecute;
-	executeComponent?: ComponentExecute<APIMessageComponentInteraction>;
 }
 
 export interface MessageCommand extends BaseCommand<MessageCommandData> {
+	type: ApplicationCommandType.Message;
 	execute: MessageCommandExecute;
 	executeComponent?: ComponentExecute<APIMessageComponentInteraction>;
 }
 
 export interface ActivityCommand extends BaseCommand<ActivityCommandData> {
+	type: ApplicationCommandType.PrimaryEntryPoint;
 	execute: ActivityCommandExecute;
 }
 

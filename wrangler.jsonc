@@ -31,6 +31,11 @@
 			"secret_name": "BOT_GLOBAL_ADMIN",
 			"store_id": "placeholder",
 		},
+		{
+			"binding": "azureClientId",
+			"secret_name": "AZURE_CLIENT_ID",
+			"store_id": "placeholder",
+		},
 	],
 	"kv_namespaces": [
 		{
@@ -39,6 +44,10 @@
 		},
 		{
 			"binding": "users",
+			"id": "placeholder",
+		},
+		{
+			"binding": "links",
 			"id": "placeholder",
 		},
 	],
