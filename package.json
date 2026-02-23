@@ -3,6 +3,9 @@
 	"version": "0.0.0",
 	"private": true,
 	"scripts": {
+		"generate:registry": "tsx scripts/generate-registry.ts",
+		"register": "tsx scripts/register-commands.ts",
+		"predeploy": "pnpm generate:registry",
 		"deploy": "wrangler deploy",
 		"dev": "wrangler dev",
 		"start": "wrangler dev",
@@ -11,12 +14,14 @@
 	},
 	"devDependencies": {
 		"@cloudflare/vitest-pool-workers": "^0.12.4",
+		"@types/node": "^25.3.0",
 		"typescript": "^5.5.2",
 		"vitest": "~3.2.0",
 		"wrangler": "^4.61.1"
 	},
 	"dependencies": {
 		"discord-api-types": "^0.38.38",
-		"discord-interactions": "^4.4.0"
+		"discord-interactions": "^4.4.0",
+		"tsx": "^4.21.0"
 	}
 }

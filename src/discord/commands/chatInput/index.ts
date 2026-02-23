@@ -1,8 +1,6 @@
 import {
-	APIApplicationCommandInteraction,
 	APIApplicationCommandSubcommandGroupOption,
 	APIApplicationCommandSubcommandOption,
-	APIMessageComponentInteraction,
 	ApplicationCommandOptionType,
 	ApplicationCommandType,
 } from 'discord-api-types/v10';
@@ -131,37 +129,4 @@ function completeSubcommandGroupOptions(
 		options.push(subcommandGroup.data);
 	}
 	return options;
-}
-
-async function executeCommand(interaction: APIApplicationCommandInteraction, env: Env, ctx: ExecutionContext, reqUrl: URL) {
-	const commandName = interaction.data.name;
-	const command = await importCommandModule(commandName);
-	if (command) {
-		return command.execute(interaction as any, env, ctx, reqUrl); //TODO: fix this any
-	} else {
-		return invalidInteractionResponse();
-	}
-}
-
-async function executeComponent(interaction: APIMessageComponentInteraction, env: Env, ctx: ExecutionContext, reqUrl: URL) {
-	const customId = interaction.data.custom_id;
-	const commandName = customId.split(':')[0];
-}
-
-async function importCommandModule(commandName: string): Promise<Command | undefined> {
-	try {
-		// look for a file ending with commandName.ts or commandName.js
-		// this allows for both TypeScript and JavaScript command files
-		// and allows for easier development without needing to compile TypeScript
-
-		return (await import(`./${commandName}.ts`)).default;
-	} catch (tsError) {
-		try {
-			return (await import(`./${commandName}.js`)).default;
-		} catch (jsError) {
-			console.error(`Failed to import command module ${commandName}.ts:`, tsError);
-			console.error(`Failed to import command module ${commandName}.js:`, jsError);
-			throw new Error(`Command module ${commandName} not found.`);
-		}
-	}
 }

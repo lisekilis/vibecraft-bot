@@ -8,6 +8,9 @@ yarn-error.log*
 lerna-debug.log*
 .pnpm-debug.log*
 
+# Auto-generated command registry
+src/discord/commands/registry.ts
+
 # Diagnostic reports (https://nodejs.org/api/report.html)
 
 report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json

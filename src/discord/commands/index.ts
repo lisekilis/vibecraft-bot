@@ -13,6 +13,7 @@ import {
 import { InteractionResponseType } from 'discord-interactions';
 import { ActivityCommand, ChatInputCommand, Command, MessageCommand, UserCommand } from '../../types';
 import { isChatInputApplicationCommandInteraction } from 'discord-api-types/utils';
+import { registry } from './registry';
 
 export default async function (interaction: APIInteraction, env: Env, ctx: ExecutionContext, reqUrl: URL): Promise<Response> {
 	const interactionType = interaction.type;
@@ -36,27 +37,21 @@ export default async function (interaction: APIInteraction, env: Env, ctx: Execu
 	}
 }
 
-async function handleCommandInteraction(
+function handleCommandInteraction(
 	interaction: APIApplicationCommandInteraction,
 	env: Env,
 	ctx: ExecutionContext,
 	reqUrl: URL,
 ): Promise<Response> {
 	if (isChatInputApplicationCommandInteraction(interaction))
-		return executeCommand(await importCommand(interaction.data.name, 'chatInput'), interaction, env, ctx, reqUrl);
+		return executeCommand(getCommand(interaction.data.name, 'chatInput'), interaction, env, ctx, reqUrl);
 
 	if (interaction.data.type === ApplicationCommandType.User)
-		return executeCommand(
-			await importCommand(interaction.data.name, 'user'),
-			interaction as APIUserApplicationCommandInteraction,
-			env,
-			ctx,
-			reqUrl,
-		);
+		return executeCommand(getCommand(interaction.data.name, 'user'), interaction as APIUserApplicationCommandInteraction, env, ctx, reqUrl);
 
 	if (interaction.data.type === ApplicationCommandType.Message)
 		return executeCommand(
-			await importCommand(interaction.data.name, 'message'),
+			getCommand(interaction.data.name, 'message'),
 			interaction as APIMessageApplicationCommandInteraction,
 			env,
 			ctx,
@@ -65,23 +60,22 @@ async function handleCommandInteraction(
 
 	if (interaction.data.type === ApplicationCommandType.PrimaryEntryPoint)
 		return executeCommand(
-			await importCommand(interaction.data.name, 'activity'),
+			getCommand(interaction.data.name, 'activity'),
 			interaction as APIPrimaryEntryPointCommandInteraction,
 			env,
 			ctx,
 			reqUrl,
 		);
 
-	return new Response('Unknown command type', { status: 400 });
+	return Promise.resolve(new Response('Unknown command type', { status: 400 }));
 }
 
-function importCommand(commandName: string, commandType: 'chatInput'): Promise<ChatInputCommand>;
-function importCommand(commandName: string, commandType: 'user'): Promise<UserCommand>;
-function importCommand(commandName: string, commandType: 'message'): Promise<MessageCommand>;
-function importCommand(commandName: string, commandType: 'activity'): Promise<ActivityCommand>;
-function importCommand(commandName: string, commandTypes: 'activity' | 'chatInput' | 'message' | 'user'): Promise<Command> {
-	// Dynamically import the command module based on the command name and type
-	return import(`./commands/${commandTypes}/${commandName}`);
+function getCommand(commandName: string, commandType: 'chatInput'): ChatInputCommand;
+function getCommand(commandName: string, commandType: 'user'): UserCommand;
+function getCommand(commandName: string, commandType: 'message'): MessageCommand;
+function getCommand(commandName: string, commandType: 'activity'): ActivityCommand;
+function getCommand(commandName: string, commandType: 'activity' | 'chatInput' | 'message' | 'user'): Command {
+	return registry[commandType]?.[commandName];
 }
 
 async function executeCommand(
