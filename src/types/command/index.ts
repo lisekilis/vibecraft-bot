@@ -23,6 +23,11 @@ export * from './execute';
 export * from './parameters';
 export * from './interaction';
 
+type CommandType = 'activity' | 'chatInput' | 'message' | 'user';
+
+/** Command Registry */
+export type CommandRegistry = Record<CommandType, Record<string, Command>>;
+
 /** Union type of all Command Interfaces */
 export type Command = ChatInputCommand | ChatInputCommandParent | UserCommand | MessageCommand | ActivityCommand;
 
