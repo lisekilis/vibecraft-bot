@@ -7,7 +7,12 @@ export default async function (interaction: APIInteraction, env: Env, ctx: Execu
 	const interactionType = interaction.type;
 	switch (interactionType) {
 		case InteractionType.Ping:
-			console.log('Received Ping Interaction', JSON.stringify(interaction), 'Responding With pong', JSON.stringify(pongResponse()));
+			console.log(
+				'Received Ping Interaction',
+				JSON.stringify(interaction),
+				'Responding With pong',
+				JSON.stringify({ body: pongResponse().body, headers: pongResponse().headers, status: pongResponse().status }),
+			);
 			return pongResponse();
 		case InteractionType.ApplicationCommand:
 			// Handle application command interactions
