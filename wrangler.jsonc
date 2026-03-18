@@ -17,42 +17,42 @@
 	"secrets_store_secrets": [
 		{
 			"binding": "discordApiKey",
-			"secret_name": "DISCORD_API_KEY",
-			"store_id": "placeholder",
+			"secret_name": "VIBECRAFT_DISCORD_API_KEY",
+			"store_id": "4ccbaded447d43c48b969e0d9e33c3da",
 		},
 		{
 			"binding": "discordPublicKey",
-			"secret_name": "DISCORD_PUBLIC_KEY",
-			"store_id": "placeholder",
+			"secret_name": "VIBECRAFT_DISCORD_PUBLIC_KEY",
+			"store_id": "4ccbaded447d43c48b969e0d9e33c3da",
 		},
 		{
 			"binding": "discordAppId",
-			"secret_name": "DISCORD_APP_ID",
-			"store_id": "placeholder",
+			"secret_name": "VIBECRAFT_DISCORD_APP_ID",
+			"store_id": "4ccbaded447d43c48b969e0d9e33c3da",
 		},
 		{
 			"binding": "globalAdmin",
-			"secret_name": "BOT_GLOBAL_ADMIN",
-			"store_id": "placeholder",
+			"secret_name": "VIBECRAFT_BOT_GLOBAL_ADMIN",
+			"store_id": "4ccbaded447d43c48b969e0d9e33c3da",
 		},
 		{
 			"binding": "azureClientId",
-			"secret_name": "AZURE_CLIENT_ID",
-			"store_id": "placeholder",
+			"secret_name": "VIBECRAFT_AZURE_CLIENT_ID",
+			"store_id": "4ccbaded447d43c48b969e0d9e33c3da",
 		},
 	],
 	"kv_namespaces": [
 		{
 			"binding": "config",
-			"id": "placeholder",
+			"id": "b0e92c74d46b42789222d87d154ae7f6",
 		},
 		{
 			"binding": "users",
-			"id": "placeholder",
+			"id": "83fee17af99743e5b31c9b837150468c",
 		},
 		{
 			"binding": "links",
-			"id": "placeholder",
+			"id": "f64b0722e4a84c259f85a0b72633f297",
 		},
 	],
 
