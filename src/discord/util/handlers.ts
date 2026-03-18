@@ -13,7 +13,11 @@ import {
 } from 'discord-api-types/v10';
 import { ChatInputCommand, UserCommand, MessageCommand, ActivityCommand, Command } from '../../types';
 import { registry } from '../commands/registry';
-import { messageResponse, promisedResponse } from './responses';
+import { messageResponse, pongResponse, promisedResponse } from './responses';
+
+export function handlePingInteraction(): Promise<Response> {
+	return promisedResponse(pongResponse());
+}
 
 export function handleCommandInteraction(
 	interaction: APIApplicationCommandInteraction,

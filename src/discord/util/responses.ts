@@ -3,6 +3,7 @@ import {
 	APIApplicationCommandOptionChoice,
 	APIInteractionResponse,
 	APIInteractionResponseChannelMessageWithSource,
+	APIInteractionResponsePong,
 	InteractionResponseType,
 	MessageFlags,
 } from 'discord-api-types/v10';
@@ -11,11 +12,10 @@ export function promisedResponse(content: APIInteractionResponse): Promise<Respo
 	return Promise.resolve(new Response(JSON.stringify(content), { headers: { 'Content-Type': 'application/json' }, status: 200 }));
 }
 
-export function pongResponse(): Response {
-	return new Response(JSON.stringify({ type: InteractionResponseType.Pong }), {
-		headers: { 'Content-Type': 'application/json' },
-		status: 200,
-	});
+export function pongResponse(): APIInteractionResponsePong {
+	return {
+		type: InteractionResponseType.Pong,
+	};
 }
 
 export function autocompleteResponse(choices?: APIApplicationCommandOptionChoice[]): APIApplicationCommandAutocompleteResponse {
