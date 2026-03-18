@@ -1,11 +1,14 @@
 import { APIInteraction, InteractionResponseType, InteractionType } from 'discord-api-types/v10';
 import { handleCommandInteraction, handleComponentInteraction } from '../util/handlers';
+import { pongResponse } from '../util/responses';
+import { json } from 'node:stream/consumers';
 
 export default async function (interaction: APIInteraction, env: Env, ctx: ExecutionContext, reqUrl: URL): Promise<Response> {
 	const interactionType = interaction.type;
 	switch (interactionType) {
 		case InteractionType.Ping:
-			return new Response(JSON.stringify({ type: InteractionResponseType.Pong }), { headers: { 'Content-Type': 'application/json' } });
+			console.log('Received Ping Interaction', JSON.stringify(interaction), 'Responding With pong', JSON.stringify(pongResponse()));
+			return pongResponse();
 		case InteractionType.ApplicationCommand:
 			// Handle application command interactions
 			return handleCommandInteraction(interaction, env, ctx, reqUrl);
