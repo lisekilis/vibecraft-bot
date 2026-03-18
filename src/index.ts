@@ -20,11 +20,7 @@ export default {
 		const method = request.method;
 		const pathParts = path.split('/').filter(Boolean);
 
-		if (pathParts[0] === 'interactions' && method === 'POST')
-			return interactionHandler(request, env, ctx).then((res) => {
-				console.log('Interaction Handled', JSON.stringify(res));
-				return res;
-			});
+		if (pathParts[0] === 'interactions' && method === 'POST') return interactionHandler(request, env, ctx);
 		if (pathParts[0] === 'link' && method === 'GET') return linkHandler(request, env);
 
 		return new Response('Not Found', { status: 404 });
