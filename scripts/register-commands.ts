@@ -27,6 +27,21 @@ if (!registry || typeof registry !== 'object') {
 
 const registrationUrl = RouteBases.api + Routes.applicationCommands(discordApplicationId);
 
+console.log(`Registering ${getCommandData(registry).length} commands with Discord...`);
+overwriteCommands(getCommandData(registry))
+	.then((response) => {
+		if (response.ok) {
+			console.log('Commands registered successfully!');
+		} else {
+			console.error(`Failed to register commands. Status: ${response.status} ${response.statusText}`);
+			response.text().then((text) => console.error(`Response body: ${text}`));
+		}
+	})
+	.catch((err) => {
+		console.error('Error while registering commands:', err);
+		throw err;
+	});
+
 async function getRegisteredCommands() {
 	const response = await fetch(registrationUrl, {
 		method: 'GET',
@@ -38,6 +53,17 @@ async function getRegisteredCommands() {
 }
 
 async function registerCommands(commands: RESTPostAPIApplicationCommandsJSONBody[]) {
+	return fetch(registrationUrl, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			Authorization: `Bot ${discordBotToken}`,
+		},
+		body: JSON.stringify(commands),
+	});
+}
+
+async function overwriteCommands(commands: RESTPostAPIApplicationCommandsJSONBody[]) {
 	return fetch(registrationUrl, {
 		method: 'PUT',
 		headers: {
