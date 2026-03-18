@@ -11,7 +11,7 @@ import { Command } from '.';
 /** Base Command Data used for creation  of Command Data Interfaces */
 export interface BaseCommandData<
 	CommandType extends ApplicationCommandType,
-	Options extends APIApplicationCommandOption[] | never = APIApplicationCommandOption[],
+	Options extends APIApplicationCommandOption[] | never = never,
 > {
 	/**  1-32 character name */
 	name: string;
@@ -32,7 +32,7 @@ export interface BaseCommandData<
 	/** Interaction context(s) where the command can be used, only for globally-scoped commands. */
 	contexts?: InteractionContextType[];
 	/** Parameters for the command, max of 25 */
-	options?: Options;
+	options?: CommandType extends ApplicationCommandType.ChatInput ? Options : never;
 }
 
 export interface ChatInputCommandData<OptionType extends APIApplicationCommandOption> extends BaseCommandData<

@@ -1,7 +1,16 @@
-import { ApplicationCommandOptionType, ApplicationCommandType } from 'discord-api-types/v10';
+import {
+	APIContainerComponent,
+	APIInteractionResponse,
+	ApplicationCommandOptionType,
+	ApplicationCommandType,
+	ButtonStyle,
+	ComponentType,
+	InteractionResponseType,
+	MessageFlags,
+} from 'discord-api-types/v10';
 import { command, subcommand } from '.';
-import { messageResponse } from '../../util/responses';
-import { ButtonStyleTypes, MessageComponent, MessageComponentTypes } from 'discord-interactions';
+import { autocompleteResponse, messageResponse } from '../../util/responses';
+import { getUser } from '../../../helpers/user';
 
 const add = subcommand({
 	data: {
@@ -15,33 +24,67 @@ const add = subcommand({
 		const userID = user!.id;
 		const linkUrl = `${origin}/link?discordId=${userID}`;
 
-		const component: MessageComponent = {
-			type: MessageComponentTypes.CONTAINER,
+		const component: APIContainerComponent = {
+			type: ComponentType.Container,
 			components: [
 				{
-					type: MessageComponentTypes.TEXT_DISPLAY,
-					content: 'To link your Minecraft account, please click the button below and follow the instructions.',
+					type: ComponentType.TextDisplay,
+					content: 'To link your Minecraft account, please click the button below.',
 				},
 				{
-					type: MessageComponentTypes.BUTTON,
-					label: 'Link Account',
-					style: ButtonStyleTypes.LINK,
-					url: linkUrl,
+					type: ComponentType.ActionRow,
+					components: [
+						{
+							type: ComponentType.Button,
+							label: 'Link Account',
+							style: ButtonStyle.Link,
+							url: linkUrl,
+						},
+					],
 				},
 			],
 		};
-		return messageResponse('This command is not implemented yet');
+
+		const res: APIInteractionResponse = {
+			type: InteractionResponseType.ChannelMessageWithSource,
+			data: {
+				components: [component],
+				flags: MessageFlags.Ephemeral,
+			},
+		};
+		return res;
 	},
-	executeComponent: async (interaction) => {
+	executeComponent: async (interaction, env, ctx, reqUrl) => {
 		return messageResponse('This command is not implemented yet');
 	},
 });
 
 const remove = subcommand({
 	data: {
-		name: 'Remove',
+		name: 'remove',
 		description: 'Remove your Minecraft account from your Discord account',
 		type: ApplicationCommandOptionType.Subcommand,
+		options: [
+			{
+				name: 'account',
+				description: 'The Minecraft account to remove',
+				type: ApplicationCommandOptionType.String,
+				required: true,
+				autocomplete: true,
+				choices: [], // Choices will be populated dynamically based on the user's linked accounts
+				// The autocomplete handler will need to fetch the user's linked accounts and return them as choices
+				// Each choice's value can be the unique identifier of the linked account (e.g., Minecraft UUID)
+			},
+		],
+	},
+	executeAutocomplete: async (interaction, env, ctx, reqUrl) => {
+		const user = await getUser(env, interaction.member?.user.id || interaction.user!.id);
+		const accounts = user?.xboxAccounts;
+		const choices = accounts?.map((account) => ({
+			name: 'test',
+			value: account.xboxUserHash,
+		}));
+		return autocompleteResponse(choices);
 	},
 	execute: async (interaction) => {
 		return messageResponse('This command is not implemented yet');

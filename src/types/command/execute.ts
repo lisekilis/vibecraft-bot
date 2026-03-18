@@ -1,4 +1,6 @@
 import {
+	APIApplicationCommandAutocompleteInteraction,
+	APIApplicationCommandAutocompleteResponse,
 	APIApplicationCommandInteraction,
 	APIChatInputApplicationCommandInteraction,
 	APIInteractionResponse,
@@ -41,4 +43,13 @@ export interface ChatInputCommandParentWithSubcommandGroupsExecute extends BaseC
 
 export interface ComponentExecute<Interaction extends APIMessageComponentInteraction> {
 	(interaction: Interaction, env: Env, ctx: ExecutionContext, reqUrl: URL): Promise<APIInteractionResponse>;
+}
+
+export interface AutocompleteExecute {
+	(
+		interaction: APIApplicationCommandAutocompleteInteraction,
+		env: Env,
+		ctx: ExecutionContext,
+		reqUrl: URL,
+	): Promise<APIApplicationCommandAutocompleteResponse>;
 }

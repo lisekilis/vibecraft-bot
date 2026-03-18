@@ -24,3 +24,9 @@ export async function patchUser(env: Env, discordID: string, userData: Partial<U
 
 	await env.users.put(discordID, JSON.stringify(newUser));
 }
+
+export async function getUser(env: Env, discordID: string): Promise<UserData | null> {
+	const userData = await env.users.get(discordID);
+	if (!userData) return null;
+	return JSON.parse(userData);
+}

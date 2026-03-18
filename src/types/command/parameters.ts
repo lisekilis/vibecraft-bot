@@ -10,6 +10,7 @@ import {
 } from 'discord-api-types/v10';
 import {
 	ActivityCommandExecute,
+	AutocompleteExecute,
 	BaseCommandData,
 	ChatInputCommandExecute,
 	ChatInputSubcommandExecute,
@@ -38,6 +39,7 @@ export interface ChatInputCommandBasicParameters extends BaseCommandParameters<
 	type: ApplicationCommandType.ChatInput;
 	execute: ChatInputCommandExecute;
 	executeComponent?: ComponentExecute<APIMessageComponentInteraction>;
+	executeAutocomplete?: AutocompleteExecute;
 }
 
 export interface ChatInputCommandParentParameters extends BaseCommandParameters<ApplicationCommandType.ChatInput, never> {
@@ -74,6 +76,7 @@ export interface BaseSubcommandParameters<
 export interface SubcommandParameters extends BaseSubcommandParameters<APIApplicationCommandSubcommandOption> {
 	execute: ChatInputSubcommandExecute;
 	executeComponent?: ComponentExecute<APIMessageComponentInteraction>;
+	executeAutocomplete?: AutocompleteExecute;
 }
 
 export interface SubcommandGroupParameters extends BaseSubcommandParameters<APIApplicationCommandSubcommandGroupOption> {

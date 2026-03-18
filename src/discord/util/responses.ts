@@ -1,4 +1,24 @@
-import { APIInteractionResponseChannelMessageWithSource, InteractionResponseType, MessageFlags } from 'discord-api-types/v10';
+import {
+	APIApplicationCommandAutocompleteResponse,
+	APIApplicationCommandOptionChoice,
+	APIInteractionResponse,
+	APIInteractionResponseChannelMessageWithSource,
+	InteractionResponseType,
+	MessageFlags,
+} from 'discord-api-types/v10';
+
+export function promisedResponse(content: APIInteractionResponse): Promise<Response> {
+	return Promise.resolve(new Response(JSON.stringify(content), { headers: { 'Content-Type': 'application/json' }, status: 200 }));
+}
+
+export function autocompleteResponse(choices?: APIApplicationCommandOptionChoice[]): APIApplicationCommandAutocompleteResponse {
+	return {
+		type: InteractionResponseType.ApplicationCommandAutocompleteResult,
+		data: {
+			choices,
+		},
+	};
+}
 
 export function ephemeralResponse(content: string): APIInteractionResponseChannelMessageWithSource {
 	return messageResponse(content, MessageFlags.Ephemeral);

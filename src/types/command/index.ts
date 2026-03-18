@@ -16,6 +16,7 @@ import {
 	ChatInputCommandParentWithSubcommandsExecute,
 	ChatInputCommandParentWithSubcommandGroupsExecute,
 	ComponentExecute,
+	AutocompleteExecute,
 } from './execute';
 
 export * from './data';
@@ -44,6 +45,7 @@ export interface BaseCommand<CommandData> {
 export interface ChatInputCommand extends BaseCommand<ChatInputCommandData<APIApplicationCommandOption>> {
 	type: ApplicationCommandType.ChatInput;
 	execute: ChatInputCommandExecute;
+	executeAutocomplete?: AutocompleteExecute;
 }
 
 export interface ChatInputCommandParentWithSubcommands extends BaseCommand<ChatInputCommandData<APIApplicationCommandSubcommandOption>> {
@@ -52,22 +54,23 @@ export interface ChatInputCommandParentWithSubcommands extends BaseCommand<ChatI
 	subcommands: Subcommand[];
 	subcommandGroups?: never;
 }
+// Unused for now
 
-export interface ChatInputCommandParentWithSubcommandGroups extends BaseCommand<
-	ChatInputCommandData<APIApplicationCommandSubcommandGroupOption>
-> {
-	type: ApplicationCommandType.ChatInput;
-	execute: ChatInputCommandParentWithSubcommandGroupsExecute;
-	subcommands?: never;
-	subcommandGroups: SubcommandGroup[];
-}
+// export interface ChatInputCommandParentWithSubcommandGroups extends BaseCommand<
+// 	ChatInputCommandData<APIApplicationCommandSubcommandGroupOption>
+// > {
+// 	type: ApplicationCommandType.ChatInput;
+// 	execute: ChatInputCommandParentWithSubcommandGroupsExecute;
+// 	subcommands?: never;
+// 	subcommandGroups: SubcommandGroup[];
+// }
 
-export interface ChatInputCommandParentWithBoth extends BaseCommand<ChatInputCommandData<APIApplicationCommandOption>> {
-	type: ApplicationCommandType.ChatInput;
-	execute: ChatInputCommandParentWithSubcommandsExecute | ChatInputCommandParentWithSubcommandGroupsExecute;
-	subcommands: Subcommand[];
-	subcommandGroups: SubcommandGroup[];
-}
+// export interface ChatInputCommandParentWithBoth extends BaseCommand<ChatInputCommandData<APIApplicationCommandOption>> {
+// 	type: ApplicationCommandType.ChatInput;
+// 	execute: ChatInputCommandParentWithSubcommandsExecute | ChatInputCommandParentWithSubcommandGroupsExecute;
+// 	subcommands: Subcommand[];
+// 	subcommandGroups: SubcommandGroup[];
+// }
 
 // export type ChatInputCommandParent =
 // 	| ChatInputCommandParentWithSubcommands
@@ -102,6 +105,7 @@ export interface ActivityCommand extends BaseCommand<ActivityCommandData> {
 export interface Subcommand extends BaseCommand<APIApplicationCommandSubcommandOption> {
 	execute: ChatInputSubcommandExecute;
 	executeComponent?: ComponentExecute<APIMessageComponentInteraction>;
+	executeAutocomplete?: AutocompleteExecute;
 }
 
 export interface SubcommandGroup extends BaseCommand<APIApplicationCommandSubcommandGroupOption> {
