@@ -7,9 +7,8 @@ export default async function (request: Request, env: Env, ctx: ExecutionContext
 	const timestamp = request.headers.get('X-Signature-Timestamp') || '';
 
 	const body = await request.text();
-	if (!verifyKey(body, signature, timestamp, await publicKey)) {
-		return new Response('Invalid request signature', { status: 401 });
-	}
+	if (!verifyKey(body, signature, timestamp, await publicKey)) return new Response('Invalid request signature', { status: 401 });
+
 	const reqUrl = new URL(request.url);
 	return commands(JSON.parse(body), env, ctx, reqUrl);
 }

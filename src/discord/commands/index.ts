@@ -6,7 +6,7 @@ export default async function (interaction: APIInteraction, env: Env, ctx: Execu
 	const interactionType = interaction.type;
 	switch (interactionType) {
 		case InteractionType.Ping:
-			return new Response(JSON.stringify({ type: InteractionResponseType.PONG }), { status: 200 });
+			return new Response(JSON.stringify({ type: InteractionResponseType.PONG }), { headers: { 'Content-Type': 'application/json' } });
 		case InteractionType.ApplicationCommand:
 			// Handle application command interactions
 			return handleCommandInteraction(interaction, env, ctx, reqUrl);

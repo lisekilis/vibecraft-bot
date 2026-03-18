@@ -18,7 +18,7 @@ export default {
 		const url = new URL(request.url);
 		const path = url.pathname;
 		const method = request.method;
-		const pathParts = path.slice(1).split('/');
+		const pathParts = path.split('/').filter(Boolean);
 
 		if (pathParts[0] === 'interactions' && method === 'POST') return interactionHandler(request, env, ctx);
 		if (pathParts[0] === 'link' && method === 'GET') return linkHandler(request, env);
