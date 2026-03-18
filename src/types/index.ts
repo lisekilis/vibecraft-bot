@@ -1,8 +1,8 @@
 export * from './command';
 
 export interface GuildConfig {
-	moderatorRoleID: string;
-	servers: mcServerData[];
+	moderatorRoleID?: string;
+	servers?: mcServerData[];
 }
 
 export interface mcServerData {
@@ -23,8 +23,7 @@ export interface mcServerData {
 }
 
 export const defaultConfig: GuildConfig = {
-	moderatorRoleID: '',
-	servers: [],
+	moderatorRoleID: undefined,
 };
 
 export interface UserData {
