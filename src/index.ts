@@ -22,7 +22,7 @@ export default {
 
 		if (pathParts[0] === 'interactions' && method === 'POST')
 			return interactionHandler(request, env, ctx).then((res) => {
-				console.log('Interaction Handled', res);
+				console.log('Interaction Handled', JSON.stringify(res));
 				return res;
 			});
 		if (pathParts[0] === 'link' && method === 'GET') return linkHandler(request, env);
