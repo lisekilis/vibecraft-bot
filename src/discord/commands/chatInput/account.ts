@@ -5,6 +5,7 @@ import {
 	ApplicationCommandType,
 	ButtonStyle,
 	ComponentType,
+	InteractionContextType,
 	InteractionResponseType,
 	MessageFlags,
 } from 'discord-api-types/v10';
@@ -108,6 +109,7 @@ export default command({
 		name: 'account',
 		description: 'Manage your linked Minecraft accounts',
 		type: ApplicationCommandType.ChatInput,
+		contexts: [InteractionContextType.Guild, InteractionContextType.BotDM],
 	},
 	subcommands: [add, remove, view],
 });

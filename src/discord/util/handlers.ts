@@ -146,7 +146,7 @@ export async function executeCommand(
 	if (!InteractionResponse) {
 		return new Response('Command executed but no response was returned', { status: 204 });
 	}
-	const response = new Response(JSON.stringify(InteractionResponse), { status: 200 });
+	const response = promisedResponse(InteractionResponse);
 	return response;
 }
 export async function executeComponent(
@@ -191,7 +191,7 @@ export async function executeComponent(
 	if (!InteractionResponse) {
 		return new Response('Command executed but no response was returned', { status: 204 });
 	}
-	const response = new Response(JSON.stringify(InteractionResponse), { status: 200 });
+	const response = promisedResponse(InteractionResponse);
 	return response;
 }
 
