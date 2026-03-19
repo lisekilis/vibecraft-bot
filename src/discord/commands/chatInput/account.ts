@@ -14,7 +14,7 @@ import { getUser } from '../../../helpers/user';
 
 const add = subcommand({
 	data: {
-		name: 'Add',
+		name: 'add',
 		description: 'Add your Minecraft account to your Discord account',
 		type: ApplicationCommandOptionType.Subcommand,
 	},
@@ -93,7 +93,7 @@ const remove = subcommand({
 
 const view = subcommand({
 	data: {
-		name: 'View',
+		name: 'view',
 		description: 'View your linked Minecraft accounts',
 		type: ApplicationCommandOptionType.Subcommand,
 	},

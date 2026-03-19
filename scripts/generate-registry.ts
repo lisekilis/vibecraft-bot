@@ -53,6 +53,14 @@ async function discoverCommands(): Promise<CommandEntry[]> {
 				continue;
 			}
 
+			const chatInputCommandNameRegex = /^[-_'\p{L}\p{N}\p{sc=Deva}\p{sc=Thai}]{1,32}$/u;
+			if (type === 'chatInput' && !chatInputCommandNameRegex.test(commandModule.default.data.name)) {
+				console.warn(
+					`Warning: Chat input command file ${file} has an invalid name that does not match Discord's requirements. Skipping it in the registry.`,
+				);
+				continue;
+			}
+
 			const name = basename(file, '.ts');
 			entries.push({
 				type,
