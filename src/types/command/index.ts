@@ -14,7 +14,6 @@ import {
 	ChatInputSubcommandExecute,
 	ChatInputCommandParentExecute,
 	ChatInputCommandParentWithSubcommandsExecute,
-	ChatInputCommandParentWithSubcommandGroupsExecute,
 	ComponentExecute,
 	AutocompleteExecute,
 } from './execute';

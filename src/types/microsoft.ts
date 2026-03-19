@@ -56,6 +56,21 @@ export enum XboxLiveErrorCodes {
 	TBD = 2148916262,
 }
 
+/** https://learn.microsoft.com/en-us/gaming/gdk/docs/reference/live/rest/uri/profilev2/uri-usersuseridprofilesettingspeopleuserlistget?view=gdk-2510 */
+export interface XboxProfileResponse {
+	/**An array of user profiles, typically containing one profile for the authenticated user*/
+	profileUsers: {
+		/**The unique identifier of the user profile, typically the Xbox user ID*/
+		id: string;
+		/**An array of settings associated with the user profile, such as gamertag and gamerscore*/
+		settings: {
+			/**The name of the setting, GameDisplayName for the display name, GameDisplayPicRaw for the profile picture, Gamerscore for the user's gamerscore, or Gamertag for the gamertag*/
+			id: string;
+			/**The value of the setting, e.g., the actual gamertag or gamerscore value*/
+			value: string;
+		}[];
+	}[];
+}
 export interface MinecraftTokenResponse {
 	/**The user's Minecraft username*/
 	username: string;
@@ -67,4 +82,19 @@ export interface MinecraftTokenResponse {
 	token_type: string;
 	/**The number of seconds until the access token expires*/
 	expires_in: number;
+}
+
+/**https://minecraft.wiki/w/Microsoft_authentication#Checking_game_ownership */
+export interface MinecraftOwnershipResponse {
+	/**An array of entitlements associated with the user's Minecraft account, may be empty*/
+	items: {
+		/**The name of the entitlement, e.g., "product_minecraft" or "game_minecraft"*/
+		name: string;
+		/**The signature type of the entitlement, typically "jwt"*/
+		signature: string;
+	}[];
+	/**The signature of the entire response, used for verification*/
+	signature: string;
+	/**The key ID used to verify the signature*/
+	keyId: string;
 }

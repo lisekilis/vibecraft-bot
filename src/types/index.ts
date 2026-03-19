@@ -32,6 +32,8 @@ export interface UserData {
 
 export interface XboxUserData {
 	xboxUserHash: string;
+	xboxUserName: string;
+	xboxProfilePicture: string;
 	minecraftAccount?: minecraftUserData;
 }
 

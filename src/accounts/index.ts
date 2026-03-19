@@ -1,9 +1,11 @@
 import { patchUser } from '../helpers/user';
 import {
 	MicrosoftErrorResponse,
+	MinecraftOwnershipResponse,
 	MinecraftTokenResponse,
 	XboxLiveErrorCodes,
 	XboxLiveTokenResponse,
+	XboxProfileResponse,
 	XSTSTokenResponse,
 } from '../types/microsoft';
 
@@ -61,11 +63,38 @@ export async function callbackHandler(request: Request, env: Env): Promise<Respo
 	}
 	const xboxUserHash = xboxLiveData.DisplayClaims.xui[0].uhs;
 
+	const xboxProfilePromise = fetchXboxProfile(xboxUserHash, xstsToken);
+
 	const minecraftResponse = await fetchMinecraftToken(xboxToken, xstsToken);
 
 	if (!minecraftResponse.ok) return handleMicrosoftError((await minecraftResponse.json()) as MicrosoftErrorResponse);
 
 	const minecraftData: MinecraftTokenResponse = await minecraftResponse.json();
+
+	const xboxProfileResponse = await xboxProfilePromise;
+
+	if (!xboxProfileResponse.ok) return handleMicrosoftError((await xboxProfileResponse.json()) as MicrosoftErrorResponse);
+
+	const xboxProfileData: XboxProfileResponse = await xboxProfileResponse.json();
+
+	// Minecraft ownership required after this point
+
+	const hasMinecraft = await checkMinecraftOwnership(minecraftData.access_token);
+
+	if (!hasMinecraft) {
+		patchUser(env, discordId, {
+			xboxAccounts: [
+				{
+					xboxUserHash,
+					xboxUserName: xboxProfileData.profileUsers[0].settings.find((setting) => setting.id === 'Gamertag')?.value || 'Unknown',
+					xboxProfilePicture: xboxProfileData.profileUsers[0].settings.find((setting) => setting.id === 'GameDisplayPicRaw')?.value || '',
+				},
+			],
+		});
+		return new Response('Microsoft account linked, but no Minecraft ownership found. Please purchase Minecraft and try linking again.', {
+			status: 200,
+		});
+	}
 
 	const MinecraftProfileResponse = await fetchMinecraftProfile(minecraftData.access_token);
 
@@ -75,6 +104,8 @@ export async function callbackHandler(request: Request, env: Env): Promise<Respo
 		xboxAccounts: [
 			{
 				xboxUserHash,
+				xboxUserName: xboxProfileData.profileUsers[0].settings.find((setting) => setting.id === 'Gamertag')?.value || 'Unknown',
+				xboxProfilePicture: xboxProfileData.profileUsers[0].settings.find((setting) => setting.id === 'GameDisplayPicRaw')?.value || '',
 				minecraftAccount: await MinecraftProfileResponse.json(),
 			},
 		],
@@ -120,6 +151,20 @@ async function fetchXSTSToken(xboxToken: string): Promise<Response> {
 	return response;
 }
 
+async function fetchXboxProfile(xboxUserHash: string, xstsToken: string): Promise<Response> {
+	const profileEndpoint = 'https://profile.xboxlive.com/users/me/profile/settings';
+	const response = fetch(profileEndpoint, {
+		method: 'GET',
+		headers: {
+			'Content-Type': 'application/json',
+			Accept: 'application/json',
+			'x-xbl-contract-version': '2',
+			Authorization: `XBL3.0 x=${xboxUserHash};${xstsToken}`,
+		},
+	});
+	return response;
+}
+
 function handleMicrosoftError(error: MicrosoftErrorResponse): Response {
 	switch (error.XErr) {
 		case XboxLiveErrorCodes.AccountBanned:
@@ -147,6 +192,34 @@ async function fetchMinecraftToken(userHash: string, xstsToken: string): Promise
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
 		body: JSON.stringify(minecraftRequestBody),
+	});
+	return response;
+}
+
+async function checkMinecraftOwnership(minecraftAccessToken: string): Promise<boolean> {
+	const mojangPublicKey =
+		'MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAtz7jy4jRH3psj5AbVS6W\nNHjniqlr/f5JDly2M8OKGK81nPEq765tJuSILOWrC3KQRvHJIhf84+ekMGH7iGlO\n4DPGDVb6hBGoMMBhCq2jkBjuJ7fVi3oOxy5EsA/IQqa69e55ugM+GJKUndLyHeNnX6RzRzDT4tX/i68WJikwL8rR8Jq49aVJlIEFT6F+1rDQdU2qcpfT04CBYLM5gMxE\nfWRl6u1PNQixz8vSOv8pA6hB2DU8Y08VvbK7X2ls+BiS3wqqj3nyVWqoxrwVKiXR\nkIqIyIAedYDFSaIq5vbmnVtIonWQPeug4/0spLQoWnTUpXRZe2/+uAKN1RY9mmaB\npRFV/Osz3PDOoICGb5AZ0asLFf/qEvGJ+di6Ltt8/aaoBuVw+7fnTw2BhkhSq1S/\nva6LxHZGXE9wsLj4CN8mZXHfwVD9QG0VNQTUgEGZ4ngf7+0u30p7mPt5sYy3H+Fm\nsWXqFZn55pecmrgNLqtETPWMNpWc2fJu/qqnxE9o2tBGy/MqJiw3iLYxf7U+4le4\njM49AUKrO16bD1rdFwyVuNaTefObKjEMTX9gyVUF6o7oDEItp5NHxFm3CqnQRmch\nHsMs+NxEnN4E9a8PDB23b4yjKOQ9VHDxBxuaZJU60GBCIOF9tslb7OAkheSJx5Xy\nEYblHbogFGPRFU++NrSQRX0CAwEAAQ==';
+
+	const ownershipResponse = await fetchMinecraftOwnership(minecraftAccessToken);
+
+	if (!ownershipResponse.ok) {
+		console.error('Failed to check Minecraft ownership:', await ownershipResponse.text());
+		return false;
+	}
+
+	const ownershipData = (await ownershipResponse.json()) as MinecraftOwnershipResponse;
+	if (!ownershipData.items || ownershipData.items.length === 0) {
+		return false; // No Minecraft ownership found
+	}
+
+	return true; // Minecraft ownership exists
+}
+
+async function fetchMinecraftOwnership(minecraftAccessToken: string): Promise<Response> {
+	const ownershipEndpoint = 'https://api.minecraftservices.com/entitlements/mcstore';
+	const response = fetch(ownershipEndpoint, {
+		method: 'GET',
+		headers: { Authorization: `Bearer ${minecraftAccessToken}` },
 	});
 	return response;
 }
