@@ -25,6 +25,17 @@ export async function patchUser(env: Env, discordID: string, userData: Partial<U
 	await env.users.put(discordID, JSON.stringify(newUser));
 }
 
+export async function deleteUser(env: Env, discordID: string): Promise<void> {
+	await env.users.delete(discordID);
+}
+
+export async function deleteUserXboxAccount(env: Env, discordID: string, xboxUserHash: string): Promise<void> {
+	const existingUser = JSON.parse((await env.users.get(discordID)) || `{}`) as UserData;
+	if (!existingUser || !existingUser.xboxAccounts) return;
+	existingUser.xboxAccounts = existingUser.xboxAccounts.filter((acc: XboxUserData) => acc.xboxUserHash !== xboxUserHash);
+	await env.users.put(discordID, JSON.stringify(existingUser));
+}
+
 export async function getUser(env: Env, discordID: string): Promise<UserData | null> {
 	const userData = await env.users.get(discordID);
 	if (!userData) return null;

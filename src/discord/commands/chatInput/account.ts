@@ -1,6 +1,7 @@
 import {
 	APIContainerComponent,
 	APIInteractionResponse,
+	APIInteractionResponseChannelMessageWithSource,
 	ApplicationCommandOptionType,
 	ApplicationCommandType,
 	ButtonStyle,
@@ -11,7 +12,7 @@ import {
 } from 'discord-api-types/v10';
 import { command, subcommand } from '.';
 import { autocompleteResponse, messageResponse } from '../../util/responses';
-import { getUser } from '../../../helpers/user';
+import { deleteUserXboxAccount, getUser } from '../../../helpers/user';
 
 const add = subcommand({
 	data: {
@@ -46,17 +47,15 @@ const add = subcommand({
 			],
 		};
 
-		const res: APIInteractionResponse = {
+		const res: APIInteractionResponseChannelMessageWithSource = {
 			type: InteractionResponseType.ChannelMessageWithSource,
 			data: {
+				content: 'To link your Minecraft account, please click the button below.',
 				components: [component],
 				flags: MessageFlags.Ephemeral,
 			},
 		};
 		return res;
-	},
-	executeComponent: async (interaction, env, ctx, reqUrl) => {
-		return messageResponse('This command is not implemented yet');
 	},
 });
 
@@ -87,8 +86,19 @@ const remove = subcommand({
 		}));
 		return autocompleteResponse(choices);
 	},
-	execute: async (interaction) => {
-		return messageResponse('This command is not implemented yet');
+	execute: async (interaction, env) => {
+		if (
+			!interaction.data.options[0].options ||
+			interaction.data.options[0].options.length === 0 ||
+			interaction.data.options[0].options[0]!.type != ApplicationCommandOptionType.String
+		) {
+			return messageResponse('No account specified to remove.');
+		}
+		const accountToRemove = interaction.data.options[0].options[0].value;
+
+		await deleteUserXboxAccount(env, interaction.member?.user.id || interaction.user!.id, accountToRemove);
+
+		return messageResponse('The specified Minecraft account has been removed.');
 	},
 });
 
