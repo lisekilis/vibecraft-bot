@@ -10,6 +10,7 @@ import {
 	APIChatInputApplicationCommandInteraction,
 	MessageFlags,
 	InteractionType,
+	InteractionResponseType,
 } from 'discord-api-types/v10';
 import { ChatInputCommand, UserCommand, MessageCommand, ActivityCommand, Command } from '../../types';
 import { registry } from '../commands/registry';
@@ -88,9 +89,18 @@ export function handleComponentInteraction(
 	return promisedResponse(messageResponse('Unknown command type for component interaction', MessageFlags.Ephemeral));
 }
 
-export function handleAutocompleteInteraction(interaction: APIApplicationCommandAutocompleteInteraction): Promise<Response> {
+export async function handleAutocompleteInteraction(
+	interaction: APIApplicationCommandAutocompleteInteraction,
+	env: Env,
+	ctx: ExecutionContext,
+	reqUrl: URL,
+): Promise<Response> {
 	// Handle autocomplete interactions here
-	return promisedResponse(messageResponse('Autocomplete Interaction received', MessageFlags.Ephemeral));
+	const command = getCommand(interaction.data.name, interaction.data.type);
+	if (command?.executeAutocomplete) {
+		return promisedResponse(await command.executeAutocomplete(interaction, env, ctx, reqUrl));
+	}
+	return promisedResponse({ type: InteractionResponseType.ApplicationCommandAutocompleteResult, data: { choices: [] } });
 }
 
 function getCommand(commandName: string, commandType: ApplicationCommandType.ChatInput): ChatInputCommand;

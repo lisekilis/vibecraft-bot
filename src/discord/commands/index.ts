@@ -1,5 +1,10 @@
 import { APIInteraction, InteractionResponseType, InteractionType } from 'discord-api-types/v10';
-import { handleCommandInteraction, handleComponentInteraction, handlePingInteraction } from '../util/handlers';
+import {
+	handleAutocompleteInteraction,
+	handleCommandInteraction,
+	handleComponentInteraction,
+	handlePingInteraction,
+} from '../util/handlers';
 import { pongResponse } from '../util/responses';
 import { json } from 'node:stream/consumers';
 
@@ -17,7 +22,7 @@ export default async function (interaction: APIInteraction, env: Env, ctx: Execu
 			return handleComponentInteraction(interaction, env, ctx, reqUrl);
 		case InteractionType.ApplicationCommandAutocomplete:
 			// Handle autocomplete interactions
-			return new Response('Autocomplete Interaction received', { status: 200 });
+			return handleAutocompleteInteraction(interaction, env, ctx, reqUrl);
 		case InteractionType.ModalSubmit:
 			// Handle modal submit interactions
 			return new Response('Modal Submit Interaction received', { status: 200 });
