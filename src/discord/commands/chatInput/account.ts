@@ -51,7 +51,7 @@ const add = subcommand({
 			data: {
 				content: 'To link your Minecraft account, please click the button below.',
 				components: [component],
-				flags: MessageFlags.Ephemeral,
+				flags: MessageFlags.Ephemeral + MessageFlags.IsComponentsV2,
 			},
 		};
 		console.log(res);
