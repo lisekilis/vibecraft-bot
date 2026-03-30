@@ -1,6 +1,7 @@
 import {
 	APIContainerComponent,
 	APIInteractionResponseChannelMessageWithSource,
+	APIMessageTopLevelComponent,
 	ApplicationCommandOptionType,
 	ApplicationCommandType,
 	ButtonStyle,
@@ -25,32 +26,38 @@ const add = subcommand({
 		const userID = user!.id;
 		const linkUrl = `${origin}/link?discordId=${userID}`;
 
-		const component: APIContainerComponent = {
-			type: ComponentType.Container,
-			components: [
-				{
-					type: ComponentType.TextDisplay,
-					content: 'To link your Minecraft account, please click the button below.',
-				},
-				{
-					type: ComponentType.ActionRow,
-					components: [
-						{
-							type: ComponentType.Button,
-							label: 'Link Account',
-							style: ButtonStyle.Link,
-							url: linkUrl,
-						},
-					],
-				},
-			],
-		};
+		const components: APIMessageTopLevelComponent[] = [
+			{
+				type: ComponentType.TextDisplay,
+				content: 'To link your Minecraft account, please click the button below.',
+			},
+			{
+				type: ComponentType.Container,
+				components: [
+					{
+						type: ComponentType.TextDisplay,
+						content: 'To link your Minecraft account, please click the button below.',
+					},
+					{
+						type: ComponentType.ActionRow,
+						components: [
+							{
+								type: ComponentType.Button,
+								label: 'Link Account',
+								style: ButtonStyle.Link,
+								url: linkUrl,
+							},
+						],
+					},
+				],
+			},
+		];
 
 		const res: APIInteractionResponseChannelMessageWithSource = {
 			type: InteractionResponseType.ChannelMessageWithSource,
 			data: {
 				content: 'To link your Minecraft account, please click the button below.',
-				components: [component],
+				components,
 				flags: MessageFlags.Ephemeral + MessageFlags.IsComponentsV2,
 			},
 		};
