@@ -1,4 +1,4 @@
-import { ApplicationCommandType, ApplicationIntegrationType, InteractionContextType } from 'discord-api-types/v10';
+import { ApplicationCommandType, InteractionContextType } from 'discord-api-types/v10';
 import { command } from '.';
 
 export default command({

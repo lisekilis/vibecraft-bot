@@ -1,6 +1,5 @@
 import {
 	APIContainerComponent,
-	APIInteractionResponse,
 	APIInteractionResponseChannelMessageWithSource,
 	ApplicationCommandOptionType,
 	ApplicationCommandType,
@@ -55,6 +54,7 @@ const add = subcommand({
 				flags: MessageFlags.Ephemeral,
 			},
 		};
+		console.log(res);
 		return res;
 	},
 });

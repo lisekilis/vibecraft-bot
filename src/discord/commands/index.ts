@@ -1,4 +1,4 @@
-import { APIInteraction, InteractionResponseType, InteractionType } from 'discord-api-types/v10';
+import { APIInteraction, InteractionType } from 'discord-api-types/v10';
 import {
 	handleAutocompleteInteraction,
 	handleCommandInteraction,
@@ -6,7 +6,6 @@ import {
 	handlePingInteraction,
 } from '../util/handlers';
 import { pongResponse } from '../util/responses';
-import { json } from 'node:stream/consumers';
 
 export default async function (interaction: APIInteraction, env: Env, ctx: ExecutionContext, reqUrl: URL): Promise<Response> {
 	const interactionType = interaction.type;
