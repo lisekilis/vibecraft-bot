@@ -56,18 +56,12 @@ const add = subcommand({
 		const res: APIInteractionResponseChannelMessageWithSource = {
 			type: InteractionResponseType.ChannelMessageWithSource,
 			data: {
-				content: 'To link your Minecraft account, please click the button below.',
 				components,
 				flags: MessageFlags.Ephemeral + MessageFlags.IsComponentsV2,
 			},
 		};
-		console.log(res);
 
-		const responsePromise = requestResponse(interaction.id, interaction.token, res);
-		const response = await responsePromise;
-		console.log(await response.json());
-		console.log('Response sent');
-		return pongResponse();
+		return res;
 	},
 });
 
