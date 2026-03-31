@@ -63,13 +63,10 @@ const add = subcommand({
 		};
 		console.log(res);
 
-		const response = requestResponse(interaction.id, interaction.token, res).then((res) => {
-			res.json().then((data) => {
-				console.log('Interaction response data:', data);
-			});
-			return res;
-		});
-		await response;
+		const responsePromise = requestResponse(interaction.id, interaction.token, res);
+		const response = await responsePromise;
+		console.log(await response.json());
+		console.log('Response sent');
 		return pongResponse();
 	},
 });
