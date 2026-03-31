@@ -11,7 +11,7 @@ import {
 	MessageFlags,
 } from 'discord-api-types/v10';
 import { command, subcommand } from '.';
-import { autocompleteResponse, messageResponse } from '../../util/responses';
+import { autocompleteResponse, messageResponse, pongResponse, requestResponse } from '../../util/responses';
 import { deleteUserXboxAccount, getUser } from '../../../helpers/user';
 
 const add = subcommand({
@@ -22,7 +22,7 @@ const add = subcommand({
 	},
 	execute: async (interaction, env, ctx, reqUrl) => {
 		const origin = reqUrl.origin;
-		const user = interaction.member?.user || interaction.user;
+		const user = interaction.user || interaction.member?.user;
 		const userID = user!.id;
 		const linkUrl = `${origin}/link?discordId=${userID}`;
 
@@ -62,7 +62,13 @@ const add = subcommand({
 			},
 		};
 		console.log(res);
-		return res;
+
+		const response = requestResponse(interaction.id, interaction.token, res).then((res) => {
+			console.log(res);
+			return res;
+		});
+		await response;
+		return pongResponse();
 	},
 });
 

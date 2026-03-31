@@ -6,7 +6,17 @@ import {
 	APIInteractionResponsePong,
 	InteractionResponseType,
 	MessageFlags,
+	RouteBases,
+	Routes,
 } from 'discord-api-types/v10';
+
+export function requestResponse(interactionId: string, interactionToken: string, response: APIInteractionResponse): Promise<Response> {
+	return fetch(RouteBases.api + Routes.interactionCallback(interactionId, interactionToken), {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(response),
+	});
+}
 
 export function promisedResponse(content: APIInteractionResponse): Promise<Response> {
 	return Promise.resolve(new Response(JSON.stringify(content), { headers: { 'Content-Type': 'application/json' }, status: 200 }));
