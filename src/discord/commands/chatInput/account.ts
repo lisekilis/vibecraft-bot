@@ -64,7 +64,7 @@ const add = subcommand({
 		console.log(res);
 
 		const response = requestResponse(interaction.id, interaction.token, res).then((res) => {
-			console.log(JSON.stringify(res));
+			console.log(res.json());
 			return res;
 		});
 		await response;
