@@ -37,6 +37,8 @@ export async function callbackHandler(request: Request, env: Env): Promise<Respo
 	const state = url.searchParams.get('state');
 	if (!code || !state) return new Response('Missing code or state parameter', { status: 400 });
 
+	console.log(`Received callback with code: ${code} and state: ${state} getting discordId from KV store...`);
+
 	const discordIdPromise = env.links.get(state);
 
 	const xboxLiveResponsePromise = fetchXboxLiveToken(code);
@@ -44,9 +46,13 @@ export async function callbackHandler(request: Request, env: Env): Promise<Respo
 	const discordId = await discordIdPromise;
 	if (!discordId) return new Response('Invalid or expired link', { status: 400 });
 
+	console.log(`Got discordId: ${discordId} from KV store, fetching Xbox Live token...`);
+
 	const xboxLiveResponse = await xboxLiveResponsePromise;
 
 	if (!xboxLiveResponse.ok) return handleMicrosoftError((await xboxLiveResponse.json()) as MicrosoftErrorResponse);
+
+	console.log('Successfully fetched Xbox Live token, processing response...');
 
 	const xboxLiveData: XboxLiveTokenResponse = await xboxLiveResponse.json();
 	const xboxToken = xboxLiveData.DisplayClaims.xui[0].uhs; // User hash from Xbox Live token response
@@ -54,6 +60,8 @@ export async function callbackHandler(request: Request, env: Env): Promise<Respo
 	const xstsResponse = await fetchXSTSToken(xboxToken);
 
 	if (!xstsResponse.ok) return handleMicrosoftError((await xstsResponse.json()) as MicrosoftErrorResponse);
+
+	console.log('Successfully fetched XSTS token, processing response...');
 
 	const xstsData: XSTSTokenResponse = await xstsResponse.json();
 	const xstsToken = xstsData.Token;
@@ -78,6 +86,7 @@ export async function callbackHandler(request: Request, env: Env): Promise<Respo
 	const xboxProfileData: XboxProfileResponse = await xboxProfileResponse.json();
 
 	// Minecraft ownership required after this point
+	console.log('Successfully fetched Xbox profile, checking Minecraft ownership...');
 
 	const hasMinecraft = await checkMinecraftOwnership(minecraftData.access_token);
 
@@ -96,9 +105,12 @@ export async function callbackHandler(request: Request, env: Env): Promise<Respo
 		});
 	}
 
+	console.log('Successfully verified Minecraft ownership, fetching Minecraft profile...');
 	const MinecraftProfileResponse = await fetchMinecraftProfile(minecraftData.access_token);
 
 	if (!MinecraftProfileResponse.ok) return new Response('Failed to fetch Minecraft profile', { status: 500 });
+
+	console.log('Successfully fetched Minecraft profile, linking accounts in KV store...');
 
 	patchUser(env, discordId, {
 		xboxAccounts: [
@@ -110,6 +122,8 @@ export async function callbackHandler(request: Request, env: Env): Promise<Respo
 			},
 		],
 	});
+
+	console.log('Successfully linked Microsoft account with Minecraft ownership to Discord ID:', discordId);
 
 	return new Response(`Successfully linked your Minecraft account`, { status: 200 });
 }
