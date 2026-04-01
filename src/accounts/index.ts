@@ -10,6 +10,7 @@ import {
 } from '../types/microsoft';
 
 export async function linkHandler(request: Request, env: Env): Promise<Response> {
+	const clientId = env.azureClientId.get();
 	const url = new URL(request.url);
 	const discordId = url.searchParams.get('discordId');
 	if (!discordId) return new Response('Missing discordId parameter', { status: 400 });
@@ -19,8 +20,10 @@ export async function linkHandler(request: Request, env: Env): Promise<Response>
 
 	const callbackUrl = new URL(`${url.origin}/auth/callback`);
 
+	// add code challange here
+
 	const microsoftLoginUrl = new URL('https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize');
-	microsoftLoginUrl.searchParams.set('client_id', await env.azureClientId.get());
+	microsoftLoginUrl.searchParams.set('client_id', await clientId);
 	microsoftLoginUrl.searchParams.set('response_type', 'code');
 	microsoftLoginUrl.searchParams.set('redirect_uri', callbackUrl.href);
 	microsoftLoginUrl.searchParams.set('scope', 'XboxLive.signin');
