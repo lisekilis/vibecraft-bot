@@ -181,8 +181,25 @@ async function fetchXboxProfile(xboxUserHash: string, xstsToken: string): Promis
 
 function parseMicrosoftErrorResponse(response: Response): Promise<MicrosoftErrorResponse> {
 	console.log('Parsing Microsoft error response with status:', response.status, response.statusText);
-
-	return response.json() as Promise<MicrosoftErrorResponse>;
+	const res = response.json().catch((err) => {
+		console.error('Failed to parse Microsoft error response as JSON:', err);
+		return {
+			Identity: '',
+			XErr: 0,
+			Message: 'Unknown error',
+			Redirect: '',
+		} as MicrosoftErrorResponse;
+	});
+	if (!res) {
+		console.error('Microsoft error response is empty or invalid');
+		return Promise.resolve({
+			Identity: '',
+			XErr: 0,
+			Message: 'Unknown error',
+			Redirect: '',
+		} as MicrosoftErrorResponse);
+	}
+	return res as Promise<MicrosoftErrorResponse>;
 }
 
 function handleMicrosoftError(error: MicrosoftErrorResponse): Response {
