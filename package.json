@@ -5,7 +5,7 @@
 	"scripts": {
 		"generate:registry": "tsx scripts/generate-registry.ts",
 		"register": "tsx scripts/register-commands.ts",
-		"predeploy": "pnpm generate:registry; pnpm register",
+		"predeploy": "pnpm generate:registry && pnpm register",
 		"deploy": "wrangler deploy",
 		"dev": "wrangler dev",
 		"start": "wrangler dev",
