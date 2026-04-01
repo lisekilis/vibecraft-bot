@@ -80,7 +80,7 @@ export async function callbackHandler(request: Request, env: Env): Promise<Respo
 
 	const xboxLiveResponse = await xboxLiveResponsePromise;
 
-	if (!xboxLiveResponse.ok) return handleMicrosoftError(await parseMicrosoftErrorResponse(xboxLiveResponse));
+	if (!xboxLiveResponse.ok) return handleMicrosoftError(parseMicrosoftErrorResponse(xboxLiveResponse));
 
 	console.log('Successfully fetched Xbox Live token, processing response...');
 
@@ -89,7 +89,7 @@ export async function callbackHandler(request: Request, env: Env): Promise<Respo
 
 	const xstsResponse = await fetchXSTSToken(xboxToken);
 
-	if (!xstsResponse.ok) return handleMicrosoftError(await parseMicrosoftErrorResponse(xstsResponse));
+	if (!xstsResponse.ok) return handleMicrosoftError(parseMicrosoftErrorResponse(xstsResponse));
 
 	console.log('Successfully fetched XSTS token, processing response...');
 
@@ -105,13 +105,13 @@ export async function callbackHandler(request: Request, env: Env): Promise<Respo
 
 	const minecraftResponse = await fetchMinecraftToken(xboxToken, xstsToken);
 
-	if (!minecraftResponse.ok) return handleMicrosoftError(await parseMicrosoftErrorResponse(minecraftResponse));
+	if (!minecraftResponse.ok) return handleMicrosoftError(parseMicrosoftErrorResponse(minecraftResponse));
 
 	const minecraftData: MinecraftTokenResponse = await minecraftResponse.json();
 
 	const xboxProfileResponse = await xboxProfilePromise;
 
-	if (!xboxProfileResponse.ok) return handleMicrosoftError(await parseMicrosoftErrorResponse(xboxProfileResponse));
+	if (!xboxProfileResponse.ok) return handleMicrosoftError(parseMicrosoftErrorResponse(xboxProfileResponse));
 
 	const xboxProfileData: XboxProfileResponse = await xboxProfileResponse.json();
 
@@ -236,7 +236,7 @@ async function fetchXboxProfile(xboxUserHash: string, xstsToken: string): Promis
 }
 
 function parseMicrosoftErrorResponse(response: Response): Promise<MicrosoftErrorResponse> {
-	console.log('Parsing Microsoft error response with status:', response.status, response.statusText);
+	console.log('Parsing Microsoft error response with status:', response.status, response.statusText, 'for url:', response.url);
 	const res = response.json().catch((err) => {
 		console.error('Failed to parse Microsoft error response as JSON:', err);
 		return {
@@ -258,8 +258,9 @@ function parseMicrosoftErrorResponse(response: Response): Promise<MicrosoftError
 	return res as Promise<MicrosoftErrorResponse>;
 }
 
-function handleMicrosoftError(error: MicrosoftErrorResponse): Response {
-	switch (error.XErr) {
+async function handleMicrosoftError(error: Promise<MicrosoftErrorResponse>): Promise<Response> {
+	const resolvedError = await error;
+	switch (resolvedError.XErr) {
 		case XboxLiveErrorCodes.AccountBanned:
 			return new Response('Your account is banned from Xbox Live.', { status: 403 });
 		case XboxLiveErrorCodes.AccountNoXbox:
@@ -272,8 +273,8 @@ function handleMicrosoftError(error: MicrosoftErrorResponse): Response {
 		case XboxLiveErrorCodes.AccountChild:
 			return new Response('Child accounts cannot be linked. Please use an adult Microsoft account.', { status: 403 });
 		default:
-			console.error('Unknown Microsoft error:', error);
-			return new Response(`An unknown error occurred: ${error.Message} \n Please Try again later`, { status: 500 });
+			console.error('Unknown Microsoft error:', resolvedError);
+			return new Response(`An unknown error occurred: ${resolvedError.Message} \n Please Try again later`, { status: 500 });
 	}
 }
 
