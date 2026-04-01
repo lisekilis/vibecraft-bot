@@ -40,6 +40,11 @@
 			"secret_name": "VIBECRAFT_AZURE_CLIENT_ID",
 			"store_id": "4ccbaded447d43c48b969e0d9e33c3da",
 		},
+		{
+			"binding": "azureClientSecret",
+			"secret_name": "VIBECRAFT_AZURE_CLIENT_SECRET",
+			"store_id": "4ccbaded447d43c48b969e0d9e33c3da",
+		},
 	],
 	"kv_namespaces": [
 		{

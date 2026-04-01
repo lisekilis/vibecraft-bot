@@ -16,17 +16,26 @@ export async function linkHandler(request: Request, env: Env): Promise<Response>
 	if (!discordId) return new Response('Missing discordId parameter', { status: 400 });
 
 	const linkID = crypto.randomUUID();
-	await env.links.put(linkID, discordId, { expirationTtl: 60 * 5 }); // Link valid for 5 minutes
+	const codeVerifier = generateCodeVerifier();
+	const codeChallengePromise = generateCodeChallenge(codeVerifier);
+
+	const authData = {
+		discordId,
+		codeVerifier,
+	};
+	await env.links.put(linkID, JSON.stringify(authData), { expirationTtl: 60 * 5 }); // Link valid for 5 minutes
 
 	const callbackUrl = new URL(`${url.origin}/auth/callback`);
 
-	// add code challange here
+	// Generate the Microsoft login URL with PKCE parameters
 
 	const microsoftLoginUrl = new URL('https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize');
 	microsoftLoginUrl.searchParams.set('client_id', await clientId);
 	microsoftLoginUrl.searchParams.set('response_type', 'code');
 	microsoftLoginUrl.searchParams.set('redirect_uri', callbackUrl.href);
 	microsoftLoginUrl.searchParams.set('scope', 'XboxLive.signin');
+	microsoftLoginUrl.searchParams.set('code_challenge_method', 'S256');
+	microsoftLoginUrl.searchParams.set('code_challenge', await codeChallengePromise);
 	microsoftLoginUrl.searchParams.set('state', linkID);
 
 	return Response.redirect(microsoftLoginUrl.toString(), 302);
@@ -42,12 +51,30 @@ export async function callbackHandler(request: Request, env: Env): Promise<Respo
 
 	console.log(`Received callback with code: ${code} and state: ${state} getting discordId from KV store...`);
 
-	const discordIdPromise = env.links.get(state);
+	const authDataPromise = env.links.get(state);
 
-	const xboxLiveResponsePromise = fetchXboxLiveToken(code);
+	const authData = await authDataPromise;
+	if (!authData) return new Response('Invalid or expired link', { status: 400 });
 
-	const discordId = await discordIdPromise;
-	if (!discordId) return new Response('Invalid or expired link', { status: 400 });
+	const { discordId, codeVerifier } = JSON.parse(authData);
+
+	const redirectUri = `${url.origin}/auth/callback`;
+
+	const tokenResponse = await exchangeCodeForToken(redirectUri, env.azureClientId.get(), env.azureClientSecret.get(), code, codeVerifier);
+
+	if (!tokenResponse.ok) {
+		console.error('Failed to exchange code for token:', await tokenResponse.text());
+		return new Response('Failed to exchange code for token', { status: 500 });
+	}
+
+	const tokenData = (await tokenResponse.json()) as any;
+	const accessToken = tokenData.access_token;
+
+	if (!accessToken) {
+		console.error('No access token found in token response:', tokenData);
+		return new Response('No access token found in token response', { status: 500 });
+	}
+	const xboxLiveResponsePromise = fetchXboxLiveToken(accessToken);
 
 	console.log(`Got discordId: ${discordId} from KV store, fetching Xbox Live token...`);
 
@@ -129,6 +156,32 @@ export async function callbackHandler(request: Request, env: Env): Promise<Respo
 	console.log('Successfully linked Microsoft account with Minecraft ownership to Discord ID:', discordId);
 
 	return new Response(`Successfully linked your Minecraft account`, { status: 200 });
+}
+async function exchangeCodeForToken(
+	redirectUri: string,
+	clientId: Promise<string>,
+	clientSecret: Promise<string>,
+	code: string,
+	codeVerifier: string,
+) {
+	const microsoftTokenUrl = new URL('https://login.microsoftonline.com/consumers/oauth2/v2.0/token');
+	const params = new URLSearchParams();
+	params.append('client_id', await clientId);
+	params.append('scope', 'XboxLive.signin');
+	params.append('code', code);
+	params.append('redirect_uri', redirectUri);
+	params.append('grant_type', 'authorization_code');
+	params.append('code_verifier', codeVerifier);
+	params.append('client_secret', await clientSecret);
+
+	const res = fetch(microsoftTokenUrl, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/x-www-form-urlencoded',
+		},
+		body: params,
+	});
+	return res;
 }
 
 async function fetchXboxLiveToken(authCode: string): Promise<Response> {
@@ -272,4 +325,21 @@ async function fetchMinecraftProfile(accessToken: string): Promise<Response> {
 		headers: { Authorization: `Bearer ${accessToken}` },
 	});
 	return response;
+}
+
+function generateCodeVerifier(): string {
+	return btoa(crypto.randomUUID() + crypto.randomUUID() + crypto.randomUUID())
+		.replace(/\+/g, '-')
+		.replace(/\//g, '_')
+		.replace(/=/g, '');
+}
+
+async function generateCodeChallenge(codeVerifier: string): Promise<string> {
+	const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(codeVerifier));
+	const hashArray = Array.from(new Uint8Array(hashBuffer));
+	const hashBase64 = btoa(String.fromCharCode(...hashArray))
+		.replace(/\+/g, '-')
+		.replace(/\//g, '_')
+		.replace(/=/g, '');
+	return hashBase64;
 }
