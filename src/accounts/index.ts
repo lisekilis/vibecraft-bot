@@ -206,12 +206,12 @@ async function fetchXboxLiveToken(authCode: string): Promise<Response> {
 async function fetchXSTSToken(xboxToken: string): Promise<Response> {
 	const xstsEndpoint = 'https://xsts.auth.xboxlive.com/xsts/authorize';
 	const xstsRequestBody = {
+		RelyingParty: 'rp://api.minecraftservices.com/',
+		TokenType: 'JWT',
 		Properties: {
 			SandboxId: 'RETAIL',
 			UserTokens: [xboxToken],
 		},
-		RelyingParty: 'rp://api.minecraftservices.com/',
-		TokenType: 'JWT',
 	};
 	const response = fetch(xstsEndpoint, {
 		method: 'POST',
