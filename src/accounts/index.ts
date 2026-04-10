@@ -83,9 +83,7 @@ export async function callbackHandler(request: Request, env: Env): Promise<Respo
 	console.log('Successfully fetched Xbox Live token, processing response...');
 
 	const xboxLiveData: XboxLiveTokenResponse = await xboxLiveResponse.json();
-	const xboxToken = xboxLiveData.DisplayClaims.xui[0].uhs; // User hash from Xbox Live token response
-
-	console.log('Fetched Xbox Live token for user hash:', xboxToken, 'Fetching XSTS token...');
+	const xboxToken = xboxLiveData.Token; // User hash from Xbox Live token response
 
 	const xstsResponse = await fetchXSTSToken(xboxToken);
 
