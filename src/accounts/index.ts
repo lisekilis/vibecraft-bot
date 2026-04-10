@@ -49,8 +49,6 @@ export async function callbackHandler(request: Request, env: Env): Promise<Respo
 	const state = url.searchParams.get('state');
 	if (!code || !state) return new Response('Missing code or state parameter', { status: 400 });
 
-	console.log(`Received callback with code: ${code} and state: ${state} getting discordId from KV store...`);
-
 	const authDataPromise = env.links.get(state);
 
 	const authData = await authDataPromise;
@@ -86,6 +84,8 @@ export async function callbackHandler(request: Request, env: Env): Promise<Respo
 
 	const xboxLiveData: XboxLiveTokenResponse = await xboxLiveResponse.json();
 	const xboxToken = xboxLiveData.DisplayClaims.xui[0].uhs; // User hash from Xbox Live token response
+
+	console.log('Fetched Xbox Live token for user hash:', xboxToken, 'Fetching XSTS token...');
 
 	const xstsResponse = await fetchXSTSToken(xboxToken);
 
