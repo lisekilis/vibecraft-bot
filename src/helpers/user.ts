@@ -12,7 +12,7 @@ export async function patchUser(env: Env, discordID: string, userData: Partial<U
 			newUser.xboxAccounts = [...existingXboxAccounts, ...newXboxAccounts];
 		}
 	}
-
+	console.log('Patching user', discordID, 'with data', newUser);
 	await env.users.put(discordID, JSON.stringify(newUser));
 }
 
