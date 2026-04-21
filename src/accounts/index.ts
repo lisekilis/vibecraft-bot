@@ -123,7 +123,7 @@ export async function callbackHandler(request: Request, env: Env): Promise<Respo
 	const hasMinecraft = await checkMinecraftOwnership(minecraftData.access_token);
 
 	if (!hasMinecraft) {
-		patchUser(env, discordId, {
+		await patchUser(env, discordId, {
 			xboxAccounts: [
 				{
 					xboxUserHash,
@@ -144,7 +144,7 @@ export async function callbackHandler(request: Request, env: Env): Promise<Respo
 
 	console.log('Successfully fetched Minecraft profile, linking accounts in KV store...');
 
-	patchUser(env, discordId, {
+	await patchUser(env, discordId, {
 		xboxAccounts: [
 			{
 				xboxUserHash,
