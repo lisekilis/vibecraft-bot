@@ -144,7 +144,7 @@ export async function callbackHandler(request: Request, env: Env): Promise<Respo
 		xboxAccounts: [
 			{
 				xboxUserHash,
-				xboxUserName: xboxProfileData.profileUsers[0].settings.find((setting) => setting.id === 'Gamertag')?.value || 'Unknown',
+				xboxUserName: xboxProfileData.profileUsers[0].settings.find((setting) => setting.id === 'GameDisplayName')?.value || 'Unknown',
 				xboxProfilePicture: xboxProfileData.profileUsers[0].settings.find((setting) => setting.id === 'GameDisplayPicRaw')?.value || '',
 				minecraftAccount: await MinecraftProfileResponse.json(),
 			},
