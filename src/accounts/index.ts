@@ -109,7 +109,7 @@ export async function callbackHandler(request: Request, env: Env): Promise<Respo
 
 	const xboxProfileResponse = await xboxProfilePromise;
 
-	if (!xboxProfileResponse.ok) return handleMinecraftError(xboxProfileResponse);
+	if (!xboxProfileResponse.ok) return handleMicrosoftError(parseMicrosoftErrorResponse(xboxProfileResponse));
 
 	const xboxProfileData: XboxProfileResponse = await xboxProfileResponse.json();
 
