@@ -228,7 +228,7 @@ async function fetchXSTSToken(xboxToken: string, relyingParty: string): Promise<
 }
 
 async function fetchXboxProfile(xboxUserHash: string, xstsToken: string): Promise<Response> {
-	const profileEndpoint = 'https://profile.xboxlive.com/users/me/profile/settings';
+	const profileEndpoint = 'https://profile.xboxlive.com/users/batch/profile/settings';
 	const body = {
 		userIds: [xboxUserHash],
 		settings: ['GameDisplayName', 'AppDisplayName', 'Gamertag', 'GameDisplayPicRaw'],
