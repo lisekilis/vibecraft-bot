@@ -127,8 +127,10 @@ export async function callbackHandler(request: Request, env: Env): Promise<Respo
 			xboxAccounts: [
 				{
 					xboxUserHash,
-					xboxUserName: xboxProfileData.profileUsers[0].settings.find((setting) => setting.id === 'GameDisplayName')?.value || 'Unknown',
-					xboxProfilePicture: xboxProfileData.profileUsers[0].settings.find((setting) => setting.id === 'GameDisplayPicRaw')?.value || '',
+					gameDisplayName: xboxProfileData.profileUsers[0].settings.find((setting) => setting.id === 'GameDisplayName')?.value || 'Unknown',
+					appDisplayName: xboxProfileData.profileUsers[0].settings.find((setting) => setting.id === 'AppDisplayName')?.value || 'Unknown',
+					gamertag: xboxProfileData.profileUsers[0].settings.find((setting) => setting.id === 'Gamertag')?.value || 'Unknown',
+					gameProfilePicture: xboxProfileData.profileUsers[0].settings.find((setting) => setting.id === 'GameDisplayPicRaw')?.value || '',
 				},
 			],
 		});
@@ -148,8 +150,10 @@ export async function callbackHandler(request: Request, env: Env): Promise<Respo
 		xboxAccounts: [
 			{
 				xboxUserHash,
-				xboxUserName: xboxProfileData.profileUsers[0].settings.find((setting) => setting.id === 'GameDisplayName')?.value || 'Unknown',
-				xboxProfilePicture: xboxProfileData.profileUsers[0].settings.find((setting) => setting.id === 'GameDisplayPicRaw')?.value || '',
+				gameDisplayName: xboxProfileData.profileUsers[0].settings.find((setting) => setting.id === 'GameDisplayName')?.value || 'Unknown',
+				appDisplayName: xboxProfileData.profileUsers[0].settings.find((setting) => setting.id === 'AppDisplayName')?.value || 'Unknown',
+				gamertag: xboxProfileData.profileUsers[0].settings.find((setting) => setting.id === 'Gamertag')?.value || 'Unknown',
+				gameProfilePicture: xboxProfileData.profileUsers[0].settings.find((setting) => setting.id === 'GameDisplayPicRaw')?.value || '',
 				minecraftAccount: await MinecraftProfileResponse.json(),
 			},
 		],
