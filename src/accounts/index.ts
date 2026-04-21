@@ -103,13 +103,13 @@ export async function callbackHandler(request: Request, env: Env): Promise<Respo
 
 	const minecraftResponse = await fetchMinecraftToken(xboxToken, xstsToken);
 
-	if (!minecraftResponse.ok) return handleMicrosoftError(parseMicrosoftErrorResponse(minecraftResponse));
+	if (!minecraftResponse.ok) return handleMinecraftError(minecraftResponse);
 
 	const minecraftData: MinecraftTokenResponse = await minecraftResponse.json();
 
 	const xboxProfileResponse = await xboxProfilePromise;
 
-	if (!xboxProfileResponse.ok) return handleMicrosoftError(parseMicrosoftErrorResponse(xboxProfileResponse));
+	if (!xboxProfileResponse.ok) return handleMinecraftError(xboxProfileResponse);
 
 	const xboxProfileData: XboxProfileResponse = await xboxProfileResponse.json();
 
@@ -288,7 +288,10 @@ async function fetchMinecraftToken(userHash: string, xstsToken: string): Promise
 	});
 	return response;
 }
-
+async function handleMinecraftError(error: Response): Promise<Response> {
+	console.error('Failed an API call to Minecraft services:', await error.text());
+	return new Response('Failed to verify Minecraft ownership. Please try linking again later.', { status: 500 });
+}
 async function checkMinecraftOwnership(minecraftAccessToken: string): Promise<boolean> {
 	const mojangPublicKey =
 		'MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAtz7jy4jRH3psj5AbVS6W\nNHjniqlr/f5JDly2M8OKGK81nPEq765tJuSILOWrC3KQRvHJIhf84+ekMGH7iGlO\n4DPGDVb6hBGoMMBhCq2jkBjuJ7fVi3oOxy5EsA/IQqa69e55ugM+GJKUndLyHeNnX6RzRzDT4tX/i68WJikwL8rR8Jq49aVJlIEFT6F+1rDQdU2qcpfT04CBYLM5gMxE\nfWRl6u1PNQixz8vSOv8pA6hB2DU8Y08VvbK7X2ls+BiS3wqqj3nyVWqoxrwVKiXR\nkIqIyIAedYDFSaIq5vbmnVtIonWQPeug4/0spLQoWnTUpXRZe2/+uAKN1RY9mmaB\npRFV/Osz3PDOoICGb5AZ0asLFf/qEvGJ+di6Ltt8/aaoBuVw+7fnTw2BhkhSq1S/\nva6LxHZGXE9wsLj4CN8mZXHfwVD9QG0VNQTUgEGZ4ngf7+0u30p7mPt5sYy3H+Fm\nsWXqFZn55pecmrgNLqtETPWMNpWc2fJu/qqnxE9o2tBGy/MqJiw3iLYxf7U+4le4\njM49AUKrO16bD1rdFwyVuNaTefObKjEMTX9gyVUF6o7oDEItp5NHxFm3CqnQRmch\nHsMs+NxEnN4E9a8PDB23b4yjKOQ9VHDxBxuaZJU60GBCIOF9tslb7OAkheSJx5Xy\nEYblHbogFGPRFU++NrSQRX0CAwEAAQ==';
