@@ -228,15 +228,19 @@ async function fetchXSTSToken(xboxToken: string, relyingParty: string): Promise<
 }
 
 async function fetchXboxProfile(xboxUserHash: string, xstsToken: string): Promise<Response> {
-	const profileEndpoint =
-		'https://profile.xboxlive.com/users/me/profile/settings/people/people?settings=GameDisplayName,GameDisplayPicRaw,Gamertag';
+	const profileEndpoint = 'https://profile.xboxlive.com/users/me/profile/settings';
+	const body = {
+		userIds: [xboxUserHash],
+		settings: ['GameDisplayName', 'AppDisplayName', 'Gamertag', 'GameDisplayPicRaw'],
+	};
 	const response = fetch(profileEndpoint, {
-		method: 'GET',
+		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
 			'x-xbl-contract-version': '2',
 			Authorization: `XBL3.0 x=${xboxUserHash};${xstsToken}`,
 		},
+		body: JSON.stringify(body),
 	});
 	return response;
 }

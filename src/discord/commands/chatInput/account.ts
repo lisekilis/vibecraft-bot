@@ -87,7 +87,7 @@ const remove = subcommand({
 		const user = await getUser(env, interaction.member?.user.id || interaction.user!.id);
 		const accounts = user?.xboxAccounts;
 		const choices = accounts?.map((account) => ({
-			name: account.xboxUserName,
+			name: account.appDisplayName || account.gameDisplayName || account.gamertag || 'Unknown Account',
 			value: account.xboxUserHash,
 		}));
 		return autocompleteResponse(choices);
