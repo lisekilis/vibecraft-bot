@@ -101,7 +101,7 @@ export async function callbackHandler(request: Request, env: Env): Promise<Respo
 
 	const xboxProfilePromise = fetchXboxProfile(xboxUserHash, xstsToken);
 
-	const minecraftResponse = await fetchMinecraftToken(xboxToken, xstsToken);
+	const minecraftResponse = await fetchMinecraftToken(xboxUserHash, xstsToken);
 
 	if (!minecraftResponse.ok) return handleMinecraftError(minecraftResponse);
 
