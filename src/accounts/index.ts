@@ -85,23 +85,27 @@ export async function callbackHandler(request: Request, env: Env): Promise<Respo
 	const xboxLiveData: XboxLiveTokenResponse = await xboxLiveResponse.json();
 	const xboxToken = xboxLiveData.Token; // User hash from Xbox Live token response
 
-	const xstsResponse = await fetchXSTSToken(xboxToken);
+	const minecraftxstsResponse = await fetchXSTSToken(xboxToken, 'rp://api.minecraftservices.com/');
+	const xboxServicesxstsResponse = await fetchXSTSToken(xboxToken, 'http://xboxlive.com');
 
-	if (!xstsResponse.ok) return handleMicrosoftError(parseMicrosoftErrorResponse(xstsResponse));
+	if (!minecraftxstsResponse.ok) return handleMicrosoftError(parseMicrosoftErrorResponse(minecraftxstsResponse));
+	if (!xboxServicesxstsResponse.ok) return handleMicrosoftError(parseMicrosoftErrorResponse(xboxServicesxstsResponse));
 
-	console.log('Successfully fetched XSTS token, processing response...');
+	console.log('Successfully fetched XSTS tokens, processing responses...');
 
-	const xstsData: XSTSTokenResponse = await xstsResponse.json();
-	const xstsToken = xstsData.Token;
+	const minecraftXstsData: XSTSTokenResponse = await minecraftxstsResponse.json();
+	const xboxServicesXstsData: XSTSTokenResponse = await xboxServicesxstsResponse.json();
+	const minecraftXstsToken = minecraftXstsData.Token;
+	const xboxServicesXstsToken = xboxServicesXstsData.Token;
 
-	if (xboxLiveData.DisplayClaims.xui[0].uhs !== xstsData.DisplayClaims.xui[0].uhs) {
+	if (xboxLiveData.DisplayClaims.xui[0].uhs !== minecraftXstsData.DisplayClaims.xui[0].uhs) {
 		return new Response('User hash mismatch between Xbox Live and XSTS tokens', { status: 500 });
 	}
 	const xboxUserHash = xboxLiveData.DisplayClaims.xui[0].uhs;
 
-	const xboxProfilePromise = fetchXboxProfile(xboxUserHash, xstsToken);
+	const xboxProfilePromise = fetchXboxProfile(xboxUserHash, xboxServicesXstsToken);
 
-	const minecraftResponse = await fetchMinecraftToken(xboxUserHash, xstsToken);
+	const minecraftResponse = await fetchMinecraftToken(xboxUserHash, minecraftXstsToken);
 
 	if (!minecraftResponse.ok) return handleMinecraftError(minecraftResponse);
 
@@ -201,10 +205,10 @@ async function fetchXboxLiveToken(authCode: string): Promise<Response> {
 	return response;
 }
 
-async function fetchXSTSToken(xboxToken: string): Promise<Response> {
+async function fetchXSTSToken(xboxToken: string, relyingParty: string): Promise<Response> {
 	const xstsEndpoint = 'https://xsts.auth.xboxlive.com/xsts/authorize';
 	const xstsRequestBody = {
-		RelyingParty: 'rp://api.minecraftservices.com/',
+		RelyingParty: relyingParty,
 		TokenType: 'JWT',
 		Properties: {
 			SandboxId: 'RETAIL',
@@ -226,7 +230,6 @@ async function fetchXboxProfile(xboxUserHash: string, xstsToken: string): Promis
 		method: 'GET',
 		headers: {
 			'Content-Type': 'application/json',
-			Accept: 'application/json',
 			'x-xbl-contract-version': '2',
 			Authorization: `XBL3.0 x=${xboxUserHash};${xstsToken}`,
 		},
