@@ -123,7 +123,7 @@ export async function callbackHandler(request: Request, env: Env): Promise<Respo
 			xboxAccounts: [
 				{
 					xboxUserHash,
-					xboxUserName: xboxProfileData.profileUsers[0].settings.find((setting) => setting.id === 'Gamertag')?.value || 'Unknown',
+					xboxUserName: xboxProfileData.profileUsers[0].settings.find((setting) => setting.id === 'GameDisplayName')?.value || 'Unknown',
 					xboxProfilePicture: xboxProfileData.profileUsers[0].settings.find((setting) => setting.id === 'GameDisplayPicRaw')?.value || '',
 				},
 			],
@@ -220,7 +220,8 @@ async function fetchXSTSToken(xboxToken: string): Promise<Response> {
 }
 
 async function fetchXboxProfile(xboxUserHash: string, xstsToken: string): Promise<Response> {
-	const profileEndpoint = 'https://profile.xboxlive.com/users/me/profile/settings';
+	const profileEndpoint =
+		'https://profile.xboxlive.com/users/me/profile/settings/people/people?settings=GameDisplayName,GameDisplayPicRaw,Gamertag';
 	const response = fetch(profileEndpoint, {
 		method: 'GET',
 		headers: {
