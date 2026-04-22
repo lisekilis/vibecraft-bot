@@ -82,7 +82,7 @@ export async function callbackHandler(request: Request, env: Env): Promise<Respo
 
 	console.log('Successfully fetched Xbox Live token, processing response...');
 
-	const xboxLiveData: XboxLiveTokenResponse = await xboxLiveResponse.clone().json();
+	const xboxLiveData: XboxLiveTokenResponse = await xboxLiveResponse.json();
 	const xboxToken = xboxLiveData.Token; // User hash from Xbox Live token response
 
 	const minecraftxstsResponse = await fetchXSTSToken(xboxToken, 'rp://api.minecraftservices.com/');
@@ -93,7 +93,6 @@ export async function callbackHandler(request: Request, env: Env): Promise<Respo
 
 	console.log('Successfully fetched XSTS tokens, processing responses...');
 
-	console.log('Xboxlive response:', JSON.stringify(await xboxLiveResponse.text()));
 	const minecraftXstsData: XSTSTokenResponse = await minecraftxstsResponse.json();
 	const xboxServicesXstsData: XSTSTokenResponse = await xboxServicesxstsResponse.json();
 	const minecraftXstsToken = minecraftXstsData.Token;
@@ -103,9 +102,8 @@ export async function callbackHandler(request: Request, env: Env): Promise<Respo
 		return new Response('User hash mismatch between Xbox Live and XSTS tokens', { status: 500 });
 	}
 	const xboxUserHash = xboxLiveData.DisplayClaims.xui[0].uhs;
-	const xboxUserId = xboxLiveData.DisplayClaims.xui[0].xid;
 
-	const xboxProfilePromise = fetchXboxProfile(xboxUserHash, xboxServicesXstsToken, xboxUserId);
+	const xboxProfilePromise = fetchXboxProfile(xboxUserHash, xboxServicesXstsToken);
 
 	const minecraftResponse = await fetchMinecraftToken(xboxUserHash, minecraftXstsToken);
 
@@ -229,21 +227,20 @@ async function fetchXSTSToken(xboxToken: string, relyingParty: string): Promise<
 	return response;
 }
 
-async function fetchXboxProfile(xboxUserHash: string, xstsToken: string, xboxUserId: string): Promise<Response> {
+async function fetchXboxProfile(xboxUserHash: string, xstsToken: string): Promise<Response> {
 	// https://learn.microsoft.com/en-us/gaming/gdk/docs/reference/live/rest/uri/profilev2/atoc-reference-profiles?view=gdk-2510
-	const profileEndpoint = 'https://profile.xboxlive.com/users/batch/profile/settings';
+	const profileEndpoint =
+		'https://profile.xboxlive.com/users/me/profile/settings?settings=GameDisplayName,AppDisplayName,Gamertag,GameDisplayPicRaw';
 	const body = {
-		userIds: [xboxUserId],
 		settings: ['GameDisplayName', 'AppDisplayName', 'Gamertag', 'GameDisplayPicRaw'],
 	};
 	const response = fetch(profileEndpoint, {
-		method: 'POST',
+		method: 'GET',
 		headers: {
 			'Content-Type': 'application/json',
 			'x-xbl-contract-version': '2',
 			Authorization: `XBL3.0 x=${xboxUserHash};${xstsToken}`,
 		},
-		body: JSON.stringify(body),
 	});
 	return response;
 }
