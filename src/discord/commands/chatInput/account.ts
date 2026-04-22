@@ -88,7 +88,7 @@ const remove = subcommand({
 		const accounts = user?.xboxAccounts;
 		const choices = accounts?.map((account) => ({
 			name: account.appDisplayName || account.gameDisplayName || account.gamertag || 'Unknown Account',
-			value: account.xboxUserHash,
+			value: account.xboxUserId,
 		}));
 		return autocompleteResponse(choices);
 	},

@@ -7,7 +7,7 @@ export async function patchUser(env: Env, discordID: string, userData: Partial<U
 		if (userData.xboxAccounts) {
 			const existingXboxAccounts = existingUser.xboxAccounts || [];
 			const newXboxAccounts = userData.xboxAccounts.filter(
-				(newAcc) => !existingXboxAccounts.some((existingAcc) => existingAcc.xboxUserHash === newAcc.xboxUserHash),
+				(newAcc) => !existingXboxAccounts.some((existingAcc) => existingAcc.xboxUserId === newAcc.xboxUserId),
 			);
 			newUser.xboxAccounts = [...existingXboxAccounts, ...newXboxAccounts];
 		}
