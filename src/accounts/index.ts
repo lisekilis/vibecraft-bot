@@ -126,7 +126,7 @@ export async function callbackHandler(request: Request, env: Env): Promise<Respo
 		await patchUser(env, discordId, {
 			xboxAccounts: [
 				{
-					xboxUserHash,
+					xboxUserId: xboxProfileData.profileUsers[0].id,
 					gameDisplayName: xboxProfileData.profileUsers[0].settings.find((setting) => setting.id === 'GameDisplayName')?.value || 'Unknown',
 					appDisplayName: xboxProfileData.profileUsers[0].settings.find((setting) => setting.id === 'AppDisplayName')?.value || 'Unknown',
 					gamertag: xboxProfileData.profileUsers[0].settings.find((setting) => setting.id === 'Gamertag')?.value || 'Unknown',
@@ -149,7 +149,7 @@ export async function callbackHandler(request: Request, env: Env): Promise<Respo
 	await patchUser(env, discordId, {
 		xboxAccounts: [
 			{
-				xboxUserHash,
+				xboxUserId: xboxProfileData.profileUsers[0].id,
 				gameDisplayName: xboxProfileData.profileUsers[0].settings.find((setting) => setting.id === 'GameDisplayName')?.value || 'Unknown',
 				appDisplayName: xboxProfileData.profileUsers[0].settings.find((setting) => setting.id === 'AppDisplayName')?.value || 'Unknown',
 				gamertag: xboxProfileData.profileUsers[0].settings.find((setting) => setting.id === 'Gamertag')?.value || 'Unknown',

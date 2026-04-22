@@ -31,7 +31,7 @@ export interface UserData {
 }
 
 export interface XboxUserData {
-	xboxUserHash: string;
+	xboxUserId: string;
 	gameDisplayName: string;
 	appDisplayName: string;
 	gamertag: string;
