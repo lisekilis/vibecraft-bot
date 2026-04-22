@@ -82,7 +82,7 @@ export async function callbackHandler(request: Request, env: Env): Promise<Respo
 
 	console.log('Successfully fetched Xbox Live token, processing response...');
 
-	const xboxLiveData: XboxLiveTokenResponse = await xboxLiveResponse.json();
+	const xboxLiveData: XboxLiveTokenResponse = await xboxLiveResponse.clone().json();
 	const xboxToken = xboxLiveData.Token; // User hash from Xbox Live token response
 
 	const minecraftxstsResponse = await fetchXSTSToken(xboxToken, 'rp://api.minecraftservices.com/');
