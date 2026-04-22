@@ -12,6 +12,8 @@ export interface XboxLiveTokenResponse {
 			{
 				/**User hash, used to identify the user in Xbox Live*/
 				uhs: string;
+				/**Xbox user ID*/
+				xid: string;
 			},
 		];
 	};
