@@ -96,10 +96,14 @@ export async function handleAutocompleteInteraction(
 	reqUrl: URL,
 ): Promise<Response> {
 	// Handle autocomplete interactions here
+	console.log('Received autocomplete interaction:', JSON.stringify(interaction));
 	const command = getCommand(interaction.data.name, interaction.data.type);
-	if (command?.executeAutocomplete) {
+	if (command) console.log('Found command for autocomplete interaction:', command);
+	if (command && command.executeAutocomplete) {
+		console.log('Found autocomplete handler for command:', interaction.data.name);
 		return promisedResponse(await command.executeAutocomplete(interaction, env, ctx, reqUrl));
 	}
+	console.warn('No autocomplete handler found for command:', interaction.data.name);
 	return promisedResponse({ type: InteractionResponseType.ApplicationCommandAutocompleteResult, data: { choices: [] } });
 }
 
