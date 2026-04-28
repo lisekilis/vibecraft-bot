@@ -20,10 +20,10 @@ export async function deleteUser(env: Env, discordID: string): Promise<void> {
 	await env.users.delete(discordID);
 }
 
-export async function deleteUserXboxAccount(env: Env, discordID: string, xboxUserHash: string): Promise<void> {
+export async function deleteUserXboxAccount(env: Env, discordID: string, xboxUserId: string): Promise<void> {
 	const existingUser = JSON.parse((await env.users.get(discordID)) || `{}`) as UserData;
 	if (!existingUser || !existingUser.xboxAccounts) return;
-	existingUser.xboxAccounts = existingUser.xboxAccounts.filter((acc: XboxUserData) => acc.xboxUserHash !== xboxUserHash);
+	existingUser.xboxAccounts = existingUser.xboxAccounts.filter((acc: XboxUserData) => acc.xboxUserId !== xboxUserId);
 	await env.users.put(discordID, JSON.stringify(existingUser));
 }
 

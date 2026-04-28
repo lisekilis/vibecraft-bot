@@ -13,6 +13,7 @@ import {
 import { command, subcommand } from '.';
 import { autocompleteResponse, messageResponse, pongResponse, requestResponse } from '../../util/responses';
 import { deleteUserXboxAccount, getUser } from '../../../helpers/user';
+import { findOption } from '../../util/options';
 
 const add = subcommand({
 	data: {
@@ -84,25 +85,13 @@ const remove = subcommand({
 		],
 	},
 	executeAutocomplete: async (interaction, env, ctx, reqUrl) => {
-		const user = await getUser(env, interaction.member?.user.id || interaction.user!.id);
-		const accounts = user?.xboxAccounts;
-		const choices = accounts?.map((account) => ({
-			name: account.appDisplayName || account.gameDisplayName || account.gamertag || 'Unknown Account',
-			value: account.xboxUserId,
-		}));
-		return autocompleteResponse(choices);
+		return accountAutocomplete(env, interaction.member?.user.id || interaction.user!.id);
 	},
 	execute: async (interaction, env) => {
-		if (
-			!interaction.data.options[0].options ||
-			interaction.data.options[0].options.length === 0 ||
-			interaction.data.options[0].options[0]!.type != ApplicationCommandOptionType.String
-		) {
-			return messageResponse('No account specified to remove.');
-		}
-		const accountToRemove = interaction.data.options[0].options[0].value;
+		const accountOption = findOption(interaction.data.options[0].options || [], 'account', ApplicationCommandOptionType.String);
+		if (!accountOption) return messageResponse('No account specified to remove.');
 
-		await deleteUserXboxAccount(env, interaction.member?.user.id || interaction.user!.id, accountToRemove);
+		await deleteUserXboxAccount(env, interaction.member?.user.id || interaction.user!.id, accountOption.value);
 
 		return messageResponse('The specified Minecraft account has been removed.');
 	},
@@ -113,8 +102,65 @@ const view = subcommand({
 		name: 'view',
 		description: 'View your linked Minecraft accounts',
 		type: ApplicationCommandOptionType.Subcommand,
+		options: [
+			{
+				name: 'account',
+				description: 'The Minecraft account to view',
+				type: ApplicationCommandOptionType.String,
+				required: true,
+				autocomplete: true,
+				choices: [],
+			},
+			{
+				name: 'ephemeral',
+				description: 'Whether the response should be ephemeral (only visible to you)',
+				type: ApplicationCommandOptionType.Boolean,
+				required: false,
+			},
+		],
 	},
-	execute: async (interaction) => {
+	executeAutocomplete: async (interaction, env, ctx, reqUrl) => {
+		return accountAutocomplete(env, interaction.member?.user.id || interaction.user!.id);
+	},
+	execute: async (interaction, env) => {
+		const userDataPromise = getUser(env, interaction.member?.user.id || interaction.user!.id);
+		const accountOption = findOption(interaction.data.options[0].options || [], 'account', ApplicationCommandOptionType.String);
+		if (!accountOption) return messageResponse('No account specified to view.');
+
+		const userData = await userDataPromise;
+
+		if (!userData || !userData.xboxAccounts || userData.xboxAccounts.length === 0)
+			return messageResponse('You have no linked Minecraft accounts.');
+		const account = userData.xboxAccounts.find((account) => account.xboxUserId === accountOption.value);
+		if (!account) return messageResponse('The specified account was not found in your linked accounts.');
+
+		const components: APIMessageTopLevelComponent[] = [
+			{
+				type: ComponentType.TextDisplay,
+				content: `Here's your account:`,
+			},
+			{
+				type: ComponentType.Container,
+				components: [
+					{
+						type: ComponentType.TextDisplay,
+						content: `**${account.appDisplayName || account.gameDisplayName || account.gamertag || 'Unknown Account'}**\n`,
+					},
+					{
+						type: ComponentType.MediaGallery,
+						items: [
+							{
+								media: {
+									url: account.gameProfilePicture,
+									content_type: 'image/png',
+								},
+								description: 'Profile Picture',
+							},
+						],
+					},
+				],
+			},
+		];
 		return messageResponse('This command is not implemented yet');
 	},
 });
@@ -129,3 +175,13 @@ export default command({
 	},
 	subcommands: [add, remove, view],
 });
+
+async function accountAutocomplete(env: Env, userId: string) {
+	const user = await getUser(env, userId);
+	const accounts = user?.xboxAccounts;
+	const choices = accounts?.map((account) => ({
+		name: account.appDisplayName || account.gameDisplayName || account.gamertag || 'Unknown Account',
+		value: account.xboxUserId,
+	}));
+	return autocompleteResponse(choices);
+}
