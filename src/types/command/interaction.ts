@@ -1,27 +1,21 @@
 import {
+	APIApplicationCommandAutocompleteInteraction,
 	APIApplicationCommandInteractionDataSubcommandGroupOption,
 	APIApplicationCommandInteractionDataSubcommandOption,
+	APIAutocompleteApplicationCommandInteractionData,
 	APIChatInputApplicationCommandInteraction,
 	APIChatInputApplicationCommandInteractionData,
+	ApplicationCommandOptionType,
+	ApplicationCommandType,
+	InteractionType,
 } from 'discord-api-types/v10';
 
 interface APIChatInputApplicationSubcommandInteractionData extends Omit<APIChatInputApplicationCommandInteractionData, 'options'> {
-	options: APIApplicationCommandInteractionDataSubcommandOption[];
+	options: APIApplicationCommandInteractionDataSubcommandOption<InteractionType.ApplicationCommand>[];
 }
-// const text: APIChatInputApplicationSubcommandInteraction = {
-// 	data: {
-// 		options,
-// 	},
-// };
-// const text2: APIInteraction = {
-// 	type: InteractionType.ApplicationCommand,
-// 	data: {
-// 		options: [] as APIApplicationCommandInteractionDataSubcommandOption[],
-// 	},
-// };
 
 interface APIChatInputApplicationGroupSubcommandInteractionData extends Omit<APIChatInputApplicationCommandInteractionData, 'options'> {
-	options: APIApplicationCommandInteractionDataSubcommandGroupOption[];
+	options: APIApplicationCommandInteractionDataSubcommandGroupOption<InteractionType.ApplicationCommand>[];
 }
 
 export interface APIChatInputApplicationSubcommandInteraction extends Omit<APIChatInputApplicationCommandInteraction, 'data'> {
@@ -35,3 +29,35 @@ export interface APIChatInputApplicationGroupSubcommandInteraction extends Omit<
 export type APIChatInputApplicationCommandParentInteraction =
 	| APIChatInputApplicationSubcommandInteraction
 	| APIChatInputApplicationGroupSubcommandInteraction;
+
+interface APIChatInputApplicationSubcommandAutocompleteInteractionData extends Omit<
+	APIAutocompleteApplicationCommandInteractionData,
+	'options'
+> {
+	options: APIApplicationCommandInteractionDataSubcommandOption<InteractionType.ApplicationCommandAutocomplete>[]; //APIApplicationCommandInteractionDataSubcommandGroupOption<Type>[]
+}
+
+interface APIChatInputApplicationGroupSubcommandAutocompleteInteractionData extends Omit<
+	APIAutocompleteApplicationCommandInteractionData,
+	'options'
+> {
+	options: APIApplicationCommandInteractionDataSubcommandGroupOption<InteractionType.ApplicationCommandAutocomplete>[];
+}
+
+export interface APIChatInputApplicationSubcommandAutocompleteInteraction extends Omit<
+	APIApplicationCommandAutocompleteInteraction,
+	'data'
+> {
+	data: APIChatInputApplicationSubcommandAutocompleteInteractionData;
+}
+
+export interface APIChatInputApplicationGroupSubcommandAutocompleteInteraction extends Omit<
+	APIApplicationCommandAutocompleteInteraction,
+	'data'
+> {
+	data: APIChatInputApplicationGroupSubcommandAutocompleteInteractionData;
+}
+
+export type APIChatInputApplicationCommandParentAutocompleteInteraction =
+	| APIChatInputApplicationSubcommandAutocompleteInteraction
+	| APIChatInputApplicationGroupSubcommandAutocompleteInteraction;

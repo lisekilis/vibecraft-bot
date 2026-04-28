@@ -64,3 +64,7 @@ export function fuckoffResponse(): APIInteractionResponseChannelMessageWithSourc
 export function invalidInteractionResponse(): APIInteractionResponseChannelMessageWithSource {
 	return messageResponse('Invalid interaction');
 }
+
+export function invalidAutocompleteInteractionResponse(): APIApplicationCommandAutocompleteResponse {
+	return { type: InteractionResponseType.ApplicationCommandAutocompleteResult, data: { choices: [] } };
+}

@@ -11,10 +11,11 @@ import {
 	MessageFlags,
 	InteractionType,
 	InteractionResponseType,
+	ApplicationCommandOptionType,
 } from 'discord-api-types/v10';
 import { ChatInputCommand, UserCommand, MessageCommand, ActivityCommand, Command } from '../../types';
 import { registry } from '../commands/registry';
-import { messageResponse, pongResponse, promisedResponse } from './responses';
+import { invalidAutocompleteInteractionResponse, messageResponse, pongResponse, promisedResponse } from './responses';
 
 export function handlePingInteraction(): Promise<Response> {
 	return promisedResponse(pongResponse());
@@ -104,7 +105,7 @@ export async function handleAutocompleteInteraction(
 		return promisedResponse(await command.executeAutocomplete(interaction, env, ctx, reqUrl));
 	}
 	console.warn('No autocomplete handler found for command:', interaction.data.name);
-	return promisedResponse({ type: InteractionResponseType.ApplicationCommandAutocompleteResult, data: { choices: [] } });
+	return promisedResponse(invalidAutocompleteInteractionResponse());
 }
 
 function getCommand(commandName: string, commandType: ApplicationCommandType.ChatInput): ChatInputCommand;

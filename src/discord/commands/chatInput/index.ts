@@ -19,7 +19,7 @@ import {
 	SubcommandParameters,
 	UserCommand,
 } from '../../../types';
-import { invalidInteractionResponse } from '../../util/responses';
+import { invalidAutocompleteInteractionResponse, invalidInteractionResponse } from '../../util/responses';
 
 export function command(command: ChatInputCommandBasicParameters): ChatInputCommand;
 export function command(command: ChatInputCommandParentParameters): ChatInputCommandParent;
@@ -93,6 +93,49 @@ function parentCommand(command: ChatInputCommandParentParameters): ChatInputComm
 		}
 		return invalidInteractionResponse();
 	};
+	let hasAutocomplete = false;
+	if (command.subcommands) {
+		for (const subcommand of command.subcommands) {
+			if (subcommand.executeAutocomplete) {
+				hasAutocomplete = true;
+				break;
+			}
+		}
+	}
+	if (!hasAutocomplete && command.subcommandGroups) {
+		for (const subcommandGroup of command.subcommandGroups) {
+			for (const subcommand of subcommandGroup.subcommands) {
+				if (subcommand.executeAutocomplete) {
+					hasAutocomplete = true;
+					break;
+				}
+			}
+			if (hasAutocomplete) break;
+		}
+	}
+	if (hasAutocomplete) {
+		parentCommand.executeAutocomplete = async (interaction, env, ctx, reqUrl) => {
+			if (interaction.data.options[0].type === ApplicationCommandOptionType.Subcommand) {
+				const subcommandName = interaction.data.options[0].name;
+				const subcommand = parentCommand.subcommands?.find((sc) => sc.data.name === subcommandName);
+				if (subcommand && subcommand.executeAutocomplete) {
+					return subcommand.executeAutocomplete(interaction, env, ctx, reqUrl);
+				}
+				return invalidAutocompleteInteractionResponse();
+			}
+			const subcommandGroupName = interaction.data.options[0].name;
+			const subcommandGroup = parentCommand.subcommandGroups?.find((scg) => scg.data.name === subcommandGroupName);
+			if (subcommandGroup) {
+				const subcommandName = interaction.data.options[0].options[0].name;
+				const subcommand = subcommandGroup.subcommands.find((sc) => sc.data.name === subcommandName);
+				if (subcommand && subcommand.executeAutocomplete) {
+					return subcommand.executeAutocomplete(interaction, env, ctx, reqUrl);
+				}
+				return invalidAutocompleteInteractionResponse();
+			}
+			return invalidAutocompleteInteractionResponse();
+		};
+	}
 	return parentCommand;
 }
 

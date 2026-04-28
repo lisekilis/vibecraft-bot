@@ -13,9 +13,12 @@ import {
 	APIChatInputApplicationGroupSubcommandInteraction,
 	APIChatInputApplicationSubcommandInteraction,
 	APIChatInputApplicationCommandParentInteraction,
+	APIChatInputApplicationCommandParentAutocompleteInteraction,
+	APIChatInputApplicationSubcommandAutocompleteInteraction,
+	APIChatInputApplicationGroupSubcommandAutocompleteInteraction,
 } from '.';
 
-export interface BaseCommandExecute<Interaction extends APIApplicationCommandInteraction> {
+export interface BaseCommandExecute<Interaction extends APIApplicationCommandInteraction | APIApplicationCommandAutocompleteInteraction> {
 	(interaction: Interaction, env: Env, ctx: ExecutionContext, reqUrl: URL): Promise<APIInteractionResponse>;
 }
 
@@ -36,6 +39,12 @@ export interface ChatInputCommandParentExecute extends BaseCommandExecute<APICha
 export interface ChatInputCommandParentWithSubcommandsExecute extends BaseCommandExecute<APIChatInputApplicationSubcommandInteraction> {}
 
 export interface ChatInputCommandParentWithSubcommandGroupsExecute extends BaseCommandExecute<APIChatInputApplicationGroupSubcommandInteraction> {}
+
+export interface ChatInputCommandParentAutocompleteExecute extends BaseCommandExecute<APIChatInputApplicationCommandParentAutocompleteInteraction> {}
+
+export interface ChatInputCommandParentWithSubcommandsAutocompleteExecute extends BaseCommandExecute<APIChatInputApplicationSubcommandAutocompleteInteraction> {}
+
+export interface ChatInputCommandParentWithSubcommandGroupsAutocompleteExecute extends BaseCommandExecute<APIChatInputApplicationGroupSubcommandAutocompleteInteraction> {}
 
 // export interface subcommands extends BaseCommandExecute<APIChatInputApplicationSubcommandInteraction> {}
 

@@ -16,6 +16,7 @@ import {
 	ChatInputCommandParentWithSubcommandsExecute,
 	ComponentExecute,
 	AutocompleteExecute,
+	ChatInputCommandParentAutocompleteExecute,
 } from './execute';
 
 export * from './data';
@@ -81,6 +82,7 @@ export interface ChatInputCommandParent extends BaseCommand<
 > {
 	type: ApplicationCommandType.ChatInput;
 	execute: ChatInputCommandParentExecute;
+	executeAutocomplete?: ChatInputCommandParentAutocompleteExecute;
 	subcommands?: Subcommand[];
 	subcommandGroups?: SubcommandGroup[];
 }
