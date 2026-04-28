@@ -98,7 +98,7 @@ export async function handleAutocompleteInteraction(
 	// Handle autocomplete interactions here
 	console.log('Received autocomplete interaction:', JSON.stringify(interaction));
 	const command = getCommand(interaction.data.name, interaction.data.type);
-	if (command) console.log('Found command for autocomplete interaction:', command);
+	if (command) console.log('Found command for autocomplete interaction:', command.data.name);
 	if (command && command.executeAutocomplete) {
 		console.log('Found autocomplete handler for command:', interaction.data.name);
 		return promisedResponse(await command.executeAutocomplete(interaction, env, ctx, reqUrl));
