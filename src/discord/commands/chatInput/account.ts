@@ -126,7 +126,9 @@ const view = subcommand({
 	},
 	execute: async (interaction, env) => {
 		const userDataPromise = getUser(env, interaction.member?.user.id || interaction.user!.id);
+		console.log('Fetching user data for', interaction.member?.user.id || interaction.user!.id);
 		const accountOption = findOption(interaction.data.options[0].options || [], 'account', ApplicationCommandOptionType.String);
+		console.log('Account option:', JSON.stringify(accountOption));
 		if (!accountOption) return messageResponse('No account specified to view.');
 
 		const userData = await userDataPromise;
@@ -137,8 +139,12 @@ const view = subcommand({
 		if (!account) return messageResponse('The specified account was not found in your linked accounts.');
 
 		const embed = createProfileEmbed(account, interaction.user || interaction.member?.user!);
-
-		return { type: InteractionResponseType.ChannelMessageWithSource, data: { content: '', embeds: [embed] } };
+		console.log('Created embed:', JSON.stringify(embed));
+		const flags = findOption(interaction.data.options[0].options || [], 'ephemeral', ApplicationCommandOptionType.Boolean)?.value
+			? MessageFlags.Ephemeral
+			: undefined;
+		console.log('Response flags:', flags);
+		return { type: InteractionResponseType.ChannelMessageWithSource, data: { content: '', embeds: [embed], flags } };
 	},
 });
 
