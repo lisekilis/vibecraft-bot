@@ -150,7 +150,7 @@ const view = subcommand({
 			data: { content: '', embeds: [embed], flags },
 		};
 		const response = requestResponse(interaction.id, interaction.token, responseData);
-		console.log('Response from Discord:', JSON.stringify(await response));
+		console.log('Response from Discord:', JSON.stringify(await (await response).text()));
 		return pongResponse();
 	},
 });
