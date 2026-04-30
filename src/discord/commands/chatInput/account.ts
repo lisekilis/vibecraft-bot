@@ -12,7 +12,7 @@ import {
 	MessageFlags,
 } from 'discord-api-types/v10';
 import { command, subcommand } from '.';
-import { autocompleteResponse, messageResponse } from '../../util/responses';
+import { autocompleteResponse, messageResponse, pongResponse, requestResponse } from '../../util/responses';
 import { deleteUserXboxAccount, getUser } from '../../../helpers/user';
 import { findOption } from '../../util/options';
 import { createProfileEmbed } from '../../../helpers/profile';
@@ -144,7 +144,14 @@ const view = subcommand({
 			? MessageFlags.Ephemeral
 			: undefined;
 		console.log('Response flags:', flags);
-		return { type: InteractionResponseType.ChannelMessageWithSource, data: { content: '', embeds: [embed], flags } };
+
+		const responseData: APIInteractionResponseChannelMessageWithSource = {
+			type: InteractionResponseType.ChannelMessageWithSource,
+			data: { content: '', embeds: [embed], flags },
+		};
+		const response = requestResponse(interaction.id, interaction.token, responseData);
+		console.log('Response from Discord:', JSON.stringify(await response));
+		return pongResponse();
 	},
 });
 
