@@ -28,6 +28,7 @@ export const defaultConfig: GuildConfig = {
 
 export interface UserData {
 	xboxAccounts?: XboxUserData[];
+	defaultXboxAccountId?: string;
 }
 
 export interface XboxUserData {

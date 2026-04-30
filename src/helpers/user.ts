@@ -12,6 +12,12 @@ export async function patchUser(env: Env, discordID: string, userData: Partial<U
 			newUser.xboxAccounts = [...existingXboxAccounts, ...newXboxAccounts];
 		}
 	}
+	if (newUser.defaultXboxAccountId && !newUser.xboxAccounts?.some((acc) => acc.xboxUserId === newUser.defaultXboxAccountId))
+		newUser.defaultXboxAccountId = undefined;
+
+	if (newUser.xboxAccounts && newUser.xboxAccounts.length > 0 && !newUser.defaultXboxAccountId)
+		newUser.defaultXboxAccountId = newUser.xboxAccounts[0].xboxUserId;
+
 	console.log('Patching user', discordID, 'with data', newUser);
 	await env.users.put(discordID, JSON.stringify(newUser));
 }
@@ -24,6 +30,13 @@ export async function deleteUserXboxAccount(env: Env, discordID: string, xboxUse
 	const existingUser = JSON.parse((await env.users.get(discordID)) || `{}`) as UserData;
 	if (!existingUser || !existingUser.xboxAccounts) return;
 	existingUser.xboxAccounts = existingUser.xboxAccounts.filter((acc: XboxUserData) => acc.xboxUserId !== xboxUserId);
+	if (existingUser.defaultXboxAccountId === xboxUserId) {
+		if (existingUser.xboxAccounts.length > 0) {
+			existingUser.defaultXboxAccountId = existingUser.xboxAccounts[0].xboxUserId;
+		} else {
+			existingUser.defaultXboxAccountId = undefined;
+		}
+	}
 	await env.users.put(discordID, JSON.stringify(existingUser));
 }
 

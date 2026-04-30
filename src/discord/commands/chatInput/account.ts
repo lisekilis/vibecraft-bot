@@ -1,5 +1,6 @@
 import {
 	APIContainerComponent,
+	APIEmbedImage,
 	APIInteractionResponseChannelMessageWithSource,
 	APIMessageTopLevelComponent,
 	ApplicationCommandOptionType,
@@ -14,6 +15,7 @@ import { command, subcommand } from '.';
 import { autocompleteResponse, messageResponse, pongResponse, requestResponse } from '../../util/responses';
 import { deleteUserXboxAccount, getUser } from '../../../helpers/user';
 import { findOption } from '../../util/options';
+import { url } from 'node:inspector';
 
 const add = subcommand({
 	data: {
@@ -143,24 +145,24 @@ const view = subcommand({
 				type: ComponentType.Container,
 				components: [
 					{
-						type: ComponentType.TextDisplay,
-						content: `**${account.appDisplayName || account.gameDisplayName || account.gamertag || 'Unknown Account'}**\n`,
-					},
-					{
-						type: ComponentType.MediaGallery,
-						items: [
+						type: ComponentType.Section,
+						components: [
 							{
-								media: {
-									url: account.gameProfilePicture,
-									content_type: 'image/png',
-								},
-								description: 'Profile Picture',
+								type: ComponentType.TextDisplay,
+								content: `**${account.appDisplayName || account.gameDisplayName || account.gamertag || 'Unknown Account'}**`,
 							},
 						],
+						accessory: {
+							type: ComponentType.Thumbnail,
+							media: {
+								url: account.gameProfilePicture,
+							},
+						},
 					},
 				],
 			},
 		];
+
 		return messageResponse('This command is not implemented yet');
 	},
 });
