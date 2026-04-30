@@ -12,10 +12,10 @@ import {
 	MessageFlags,
 } from 'discord-api-types/v10';
 import { command, subcommand } from '.';
-import { autocompleteResponse, messageResponse, pongResponse, requestResponse } from '../../util/responses';
+import { autocompleteResponse, messageResponse } from '../../util/responses';
 import { deleteUserXboxAccount, getUser } from '../../../helpers/user';
 import { findOption } from '../../util/options';
-import { url } from 'node:inspector';
+import { createProfileEmbed } from '../../../helpers/profile';
 
 const add = subcommand({
 	data: {
@@ -136,34 +136,9 @@ const view = subcommand({
 		const account = userData.xboxAccounts.find((account) => account.xboxUserId === accountOption.value);
 		if (!account) return messageResponse('The specified account was not found in your linked accounts.');
 
-		const components: APIMessageTopLevelComponent[] = [
-			{
-				type: ComponentType.TextDisplay,
-				content: `Here's your account:`,
-			},
-			{
-				type: ComponentType.Container,
-				components: [
-					{
-						type: ComponentType.Section,
-						components: [
-							{
-								type: ComponentType.TextDisplay,
-								content: `**${account.appDisplayName || account.gameDisplayName || account.gamertag || 'Unknown Account'}**`,
-							},
-						],
-						accessory: {
-							type: ComponentType.Thumbnail,
-							media: {
-								url: account.gameProfilePicture,
-							},
-						},
-					},
-				],
-			},
-		];
+		const embed = createProfileEmbed(account, interaction.user || interaction.member?.user!);
 
-		return messageResponse('This command is not implemented yet');
+		return { type: InteractionResponseType.ChannelMessageWithSource, data: { embeds: [embed] } };
 	},
 });
 
