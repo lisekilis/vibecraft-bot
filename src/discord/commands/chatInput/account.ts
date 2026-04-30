@@ -138,7 +138,7 @@ const view = subcommand({
 
 		const embed = createProfileEmbed(account, interaction.user || interaction.member?.user!);
 
-		return { type: InteractionResponseType.ChannelMessageWithSource, data: { embeds: [embed] } };
+		return { type: InteractionResponseType.ChannelMessageWithSource, data: { content: '', embeds: [embed] } };
 	},
 });
 
