@@ -23,7 +23,7 @@ export function createProfileEmbed(account: XboxUserData, discordUser: APIUser):
 		author: {
 			name: discordUser.global_name || discordUser.username,
 			icon_url: discordUser.avatar ? `https://cdn.discordapp.com/avatars/${discordUser.id}/${discordUser.avatar}.png` : undefined,
-			url: `discord://-/users/${discordUser.id}`,
+			url: `https://discord.com/users/${discordUser.id}`,
 		},
 		title,
 		image,
