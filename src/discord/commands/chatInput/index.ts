@@ -19,7 +19,8 @@ import {
 	SubcommandParameters,
 	UserCommand,
 } from '../../../types';
-import { invalidAutocompleteInteractionResponse, invalidInteractionResponse } from '../../util/responses';
+import { invalidAutocompleteInteractionResponse, invalidInteractionResponse, messageResponse } from '../../util/responses';
+import { ComponentID } from '../../util/components';
 
 export function command(command: ChatInputCommandBasicParameters): ChatInputCommand;
 export function command(command: ChatInputCommandParentParameters): ChatInputCommandParent;
@@ -93,7 +94,10 @@ function parentCommand(command: ChatInputCommandParentParameters): ChatInputComm
 		}
 		return invalidInteractionResponse();
 	};
+
+	// Handle autocomplete interactions for parent commands by routing them to the correct subcommand based on the interaction data
 	let hasAutocomplete = false;
+
 	if (command.subcommands) {
 		for (const subcommand of command.subcommands) {
 			if (subcommand.executeAutocomplete) {
@@ -134,6 +138,78 @@ function parentCommand(command: ChatInputCommandParentParameters): ChatInputComm
 				return invalidAutocompleteInteractionResponse();
 			}
 			return invalidAutocompleteInteractionResponse();
+		};
+	}
+
+	// If the parent command has an executeComponent function, we need to route component interactions to the correct subcommand as well
+	let hasComponentExecute = false;
+
+	if (command.subcommands) {
+		for (const subcommand of command.subcommands) {
+			if (subcommand.executeComponent) {
+				hasComponentExecute = true;
+				break;
+			}
+		}
+	}
+	if (!hasComponentExecute && command.subcommandGroups) {
+		for (const subcommandGroup of command.subcommandGroups) {
+			for (const subcommand of subcommandGroup.subcommands) {
+				if (subcommand.executeComponent) {
+					hasComponentExecute = true;
+					break;
+				}
+			}
+			if (hasComponentExecute) break;
+		}
+	}
+	if (hasComponentExecute) {
+		parentCommand.executeComponent = async (interaction, env, ctx, reqUrl) => {
+			if (!interaction.data.custom_id) {
+				console.warn('Received component interaction without custom_id');
+				return messageResponse('Invalid component interaction: missing custom_id', 1 << 6);
+			}
+			const componentId = new ComponentID(interaction.data.custom_id);
+			if (componentId.commandType !== parentCommand.data.type || componentId.commandName !== parentCommand.data.name) {
+				console.warn(
+					'Received component interaction with mismatched command type or name',
+					JSON.stringify({
+						expectedType: parentCommand.data.type,
+						expectedName: parentCommand.data.name,
+						receivedType: componentId.commandType,
+						receivedName: componentId.commandName,
+					}),
+				);
+				return messageResponse('Component does not belong to this command', 1 << 6);
+			}
+			if (componentId.subcommandGroupName) {
+				const subcommandGroup = parentCommand.subcommandGroups?.find((scg) => scg.data.name === componentId.subcommandGroupName);
+				if (!subcommandGroup) {
+					console.warn('Received component interaction with invalid subcommand group name', componentId.subcommandGroupName);
+					return messageResponse('Invalid component interaction: subcommand group not found', 1 << 6);
+				}
+				const subcommand = subcommandGroup.subcommands.find((sc) => sc.data.name === componentId.subcommandName);
+				if (!subcommand || !subcommand.executeComponent) {
+					console.warn(
+						'Received component interaction with invalid subcommand name or missing executeComponent',
+						componentId.subcommandName,
+					);
+					return messageResponse('Invalid component interaction: subcommand not found or does not support components', 1 << 6);
+				}
+				return subcommand.executeComponent(interaction, env, ctx, reqUrl);
+			}
+			const subcommand = parentCommand.subcommands?.find((sc) => sc.data.name === componentId.subcommandName);
+			if (subcommand && subcommand.executeComponent) {
+				return subcommand.executeComponent(interaction, env, ctx, reqUrl);
+			}
+			console.warn(
+				'Received component interaction with no matching subcommand for component',
+				JSON.stringify({
+					subcommandName: componentId.subcommandName,
+					subcommands: parentCommand.subcommands?.map((sc) => sc.data.name),
+				}),
+			);
+			return messageResponse('Invalid component interaction: no matching subcommand found for component', 1 << 6);
 		};
 	}
 	return parentCommand;

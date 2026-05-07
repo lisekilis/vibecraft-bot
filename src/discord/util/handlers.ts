@@ -12,10 +12,12 @@ import {
 	InteractionType,
 	InteractionResponseType,
 	ApplicationCommandOptionType,
+	APIModalSubmitInteraction,
 } from 'discord-api-types/v10';
 import { ChatInputCommand, UserCommand, MessageCommand, ActivityCommand, Command } from '../../types';
 import { registry } from '../commands/registry';
 import { invalidAutocompleteInteractionResponse, messageResponse, pongResponse, promisedResponse } from './responses';
+import { ComponentID } from './components';
 
 export function handlePingInteraction(): Promise<Response> {
 	return promisedResponse(pongResponse());
@@ -66,25 +68,21 @@ export function handleComponentInteraction(
 	ctx: ExecutionContext,
 	reqUrl: URL,
 ): Promise<Response> {
-	const interactionType = interaction.message.interaction_metadata?.type;
-	interaction.message.interaction?.name;
-	if (interaction.message.interaction_metadata?.type == InteractionType.ApplicationCommand) {
-	}
-	const [commandType, commandName] = interaction.data.custom_id.split(':');
-	// first character of custom_id is the command type, followed by a colon and then the command name
-	const commandTypeEnum = parseInt(commandType) as ApplicationCommandType;
+	const componentID = new ComponentID(interaction.data.custom_id);
+	const commandType = componentID.commandType;
+	const commandName = componentID.commandName;
 
-	if (commandTypeEnum == ApplicationCommandType.ChatInput) {
-		return executeComponent(getCommand(commandName, commandTypeEnum), interaction, env, ctx, reqUrl);
+	if (commandType == ApplicationCommandType.ChatInput) {
+		return executeComponent(getCommand(commandName, commandType), interaction, env, ctx, reqUrl);
 	}
-	if (commandTypeEnum == ApplicationCommandType.User) {
-		return executeComponent(getCommand(commandName, commandTypeEnum), interaction, env, ctx, reqUrl);
+	if (commandType == ApplicationCommandType.User) {
+		return executeComponent(getCommand(commandName, commandType), interaction, env, ctx, reqUrl);
 	}
-	if (commandTypeEnum == ApplicationCommandType.Message) {
-		return executeComponent(getCommand(commandName, commandTypeEnum), interaction, env, ctx, reqUrl);
+	if (commandType == ApplicationCommandType.Message) {
+		return executeComponent(getCommand(commandName, commandType), interaction, env, ctx, reqUrl);
 	}
-	if (commandTypeEnum == ApplicationCommandType.PrimaryEntryPoint) {
-		return executeComponent(getCommand(commandName, commandTypeEnum), interaction, env, ctx, reqUrl);
+	if (commandType == ApplicationCommandType.PrimaryEntryPoint) {
+		return executeComponent(getCommand(commandName, commandType), interaction, env, ctx, reqUrl);
 	}
 
 	return promisedResponse(messageResponse('Unknown command type for component interaction', MessageFlags.Ephemeral));
@@ -106,6 +104,30 @@ export async function handleAutocompleteInteraction(
 	}
 	console.warn('No autocomplete handler found for command:', interaction.data.name);
 	return promisedResponse(invalidAutocompleteInteractionResponse());
+}
+
+export async function handleModalSubmitInteraction(
+	interaction: APIModalSubmitInteraction,
+	env: Env,
+	ctx: ExecutionContext,
+	reqUrl: URL,
+): Promise<Response> {
+	const componentId = new ComponentID(interaction.data.custom_id);
+	const commandType = componentId.commandType;
+	const commandName = componentId.commandName;
+
+	if (commandType == ApplicationCommandType.ChatInput)
+		executeModalSubmit(getCommand(commandName, commandType), interaction, env, ctx, reqUrl);
+
+	if (commandType == ApplicationCommandType.User) executeModalSubmit(getCommand(commandName, commandType), interaction, env, ctx, reqUrl);
+
+	if (commandType == ApplicationCommandType.Message)
+		executeModalSubmit(getCommand(commandName, commandType), interaction, env, ctx, reqUrl);
+
+	if (commandType == ApplicationCommandType.PrimaryEntryPoint)
+		executeModalSubmit(getCommand(commandName, commandType), interaction, env, ctx, reqUrl);
+
+	return promisedResponse(messageResponse('Unknown command type for modal submit interaction', MessageFlags.Ephemeral));
 }
 
 function getCommand(commandName: string, commandType: ApplicationCommandType.ChatInput): ChatInputCommand;
@@ -203,6 +225,51 @@ export async function executeComponent(
 		return new Response('Command not found or invalid command module', { status: 404 });
 	}
 	const InteractionResponse = await command.executeComponent(interaction, env, ctx, reqUrl);
+	if (!InteractionResponse) {
+		return new Response('Command executed but no response was returned', { status: 204 });
+	}
+	const response = promisedResponse(InteractionResponse);
+	return response;
+}
+async function executeModalSubmit(
+	command: ChatInputCommand,
+	interaction: APIModalSubmitInteraction,
+	env: Env,
+	ctx: ExecutionContext,
+	reqUrl: URL,
+): Promise<Response>;
+async function executeModalSubmit(
+	command: UserCommand,
+	interaction: APIModalSubmitInteraction,
+	env: Env,
+	ctx: ExecutionContext,
+	reqUrl: URL,
+): Promise<Response>;
+async function executeModalSubmit(
+	command: MessageCommand,
+	interaction: APIModalSubmitInteraction,
+	env: Env,
+	ctx: ExecutionContext,
+	reqUrl: URL,
+): Promise<Response>;
+async function executeModalSubmit(
+	command: ActivityCommand,
+	interaction: APIModalSubmitInteraction,
+	env: Env,
+	ctx: ExecutionContext,
+	reqUrl: URL,
+): Promise<Response>;
+async function executeModalSubmit(
+	command: Command,
+	interaction: APIModalSubmitInteraction,
+	env: Env,
+	ctx: ExecutionContext,
+	reqUrl: URL,
+): Promise<Response> {
+	if (!command || !command.executeModalSubmit || typeof command.executeModalSubmit !== 'function') {
+		return new Response('Command not found or invalid command module', { status: 404 });
+	}
+	const InteractionResponse = await command.executeModalSubmit(interaction, env, ctx, reqUrl);
 	if (!InteractionResponse) {
 		return new Response('Command executed but no response was returned', { status: 204 });
 	}

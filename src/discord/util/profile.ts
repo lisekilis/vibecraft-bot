@@ -1,5 +1,5 @@
 import { APIEmbed, APIEmbedFooter, APIEmbedImage, APIUser, RouteBases } from 'discord-api-types/v10';
-import { XboxUserData } from '../types';
+import { XboxUserData } from '../../types';
 
 export function createProfileEmbed(account: XboxUserData, discordUser: APIUser): APIEmbed {
 	let image: APIEmbedImage | undefined;

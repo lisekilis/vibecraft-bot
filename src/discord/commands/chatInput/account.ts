@@ -15,7 +15,7 @@ import { command, subcommand } from '.';
 import { autocompleteResponse, messageResponse, pongResponse, requestResponse } from '../../util/responses';
 import { deleteUserXboxAccount, getUser } from '../../../helpers/user';
 import { findOption } from '../../util/options';
-import { createProfileEmbed } from '../../../helpers/profile';
+import { createProfileEmbed } from '../../util/profile';
 
 const add = subcommand({
 	data: {
@@ -161,7 +161,6 @@ export default command({
 		name: 'account',
 		description: 'Manage your linked Minecraft accounts',
 		type: ApplicationCommandType.ChatInput,
-		contexts: [InteractionContextType.Guild, InteractionContextType.BotDM],
 	},
 	subcommands: [add, remove, view],
 });

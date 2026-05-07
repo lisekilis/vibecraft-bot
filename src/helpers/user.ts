@@ -40,8 +40,8 @@ export async function deleteUserXboxAccount(env: Env, discordID: string, xboxUse
 	await env.users.put(discordID, JSON.stringify(existingUser));
 }
 
-export async function getUser(env: Env, discordID: string): Promise<UserData | null> {
-	const userData = await env.users.get(discordID);
-	if (!userData) return null;
-	return JSON.parse(userData);
+export async function getUser(env: Env, discordID: string): Promise<UserData | undefined> {
+	const userData = await env.users.get(discordID, { type: 'json' });
+	if (!userData) return undefined;
+	return userData as UserData;
 }

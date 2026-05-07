@@ -3,6 +3,7 @@ import {
 	handleAutocompleteInteraction,
 	handleCommandInteraction,
 	handleComponentInteraction,
+	handleModalSubmitInteraction,
 	handlePingInteraction,
 } from '../util/handlers';
 import { pongResponse } from '../util/responses';
@@ -24,7 +25,7 @@ export default async function (interaction: APIInteraction, env: Env, ctx: Execu
 			return handleAutocompleteInteraction(interaction, env, ctx, reqUrl);
 		case InteractionType.ModalSubmit:
 			// Handle modal submit interactions
-			return new Response('Modal Submit Interaction received', { status: 200 });
+			return handleModalSubmitInteraction(interaction, env, ctx, reqUrl);
 		default:
 			return new Response('Unknown interaction type', { status: 400 });
 	}

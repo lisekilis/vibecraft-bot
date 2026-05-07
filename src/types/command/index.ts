@@ -3,6 +3,7 @@ import {
 	APIApplicationCommandSubcommandGroupOption,
 	APIApplicationCommandSubcommandOption,
 	APIMessageComponentInteraction,
+	APIModalSubmitInteraction,
 	ApplicationCommandType,
 } from 'discord-api-types/v10';
 import { ChatInputCommandData, UserCommandData, MessageCommandData, ActivityCommandData } from './data';
@@ -17,6 +18,7 @@ import {
 	ComponentExecute,
 	AutocompleteExecute,
 	ChatInputCommandParentAutocompleteExecute,
+	ModalSubmitExecute,
 } from './execute';
 
 export * from './data';
@@ -40,6 +42,8 @@ export interface BaseCommand<CommandData> {
 	type: CommandData extends APIApplicationCommandOption ? never : ApplicationCommandType;
 	/** Optional component execution function */
 	executeComponent?: CommandData extends ActivityCommandData ? never : ComponentExecute<APIMessageComponentInteraction>;
+	/** Optional modal submit execution function */
+	executeModalSubmit?: CommandData extends ActivityCommandData ? never : ModalSubmitExecute<APIModalSubmitInteraction>;
 }
 
 export interface ChatInputCommand extends BaseCommand<ChatInputCommandData<APIApplicationCommandOption>> {
@@ -82,6 +86,8 @@ export interface ChatInputCommandParent extends BaseCommand<
 > {
 	type: ApplicationCommandType.ChatInput;
 	execute: ChatInputCommandParentExecute;
+
+	/** Optional autocomplete execution function for parent commands. */
 	executeAutocomplete?: ChatInputCommandParentAutocompleteExecute;
 	subcommands?: Subcommand[];
 	subcommandGroups?: SubcommandGroup[];
@@ -95,7 +101,6 @@ export interface UserCommand extends BaseCommand<UserCommandData> {
 export interface MessageCommand extends BaseCommand<MessageCommandData> {
 	type: ApplicationCommandType.Message;
 	execute: MessageCommandExecute;
-	executeComponent?: ComponentExecute<APIMessageComponentInteraction>;
 }
 
 export interface ActivityCommand extends BaseCommand<ActivityCommandData> {
@@ -105,7 +110,6 @@ export interface ActivityCommand extends BaseCommand<ActivityCommandData> {
 
 export interface Subcommand extends BaseCommand<APIApplicationCommandSubcommandOption> {
 	execute: ChatInputSubcommandExecute;
-	executeComponent?: ComponentExecute<APIMessageComponentInteraction>;
 	executeAutocomplete?: AutocompleteExecute;
 }
 

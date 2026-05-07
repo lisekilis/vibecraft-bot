@@ -6,6 +6,7 @@ import {
 	APIInteractionResponse,
 	APIMessageApplicationCommandInteraction,
 	APIMessageComponentInteraction,
+	APIModalSubmitInteraction,
 	APIPrimaryEntryPointCommandInteraction,
 	APIUserApplicationCommandInteraction,
 } from 'discord-api-types/v10';
@@ -51,6 +52,10 @@ export interface ChatInputCommandParentWithSubcommandGroupsAutocompleteExecute e
 // export interface ChatInputGroupSubcommandExecute extends BaseCommandExecute<APIChatInputApplicationGroupSubcommandInteraction> {}
 
 export interface ComponentExecute<Interaction extends APIMessageComponentInteraction> {
+	(interaction: Interaction, env: Env, ctx: ExecutionContext, reqUrl: URL): Promise<APIInteractionResponse>;
+}
+
+export interface ModalSubmitExecute<Interaction extends APIModalSubmitInteraction> {
 	(interaction: Interaction, env: Env, ctx: ExecutionContext, reqUrl: URL): Promise<APIInteractionResponse>;
 }
 
