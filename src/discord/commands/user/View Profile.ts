@@ -23,7 +23,10 @@ export default command({
 
 		if (!user || !user.xboxAccounts || user.xboxAccounts.length === 0)
 			return messageResponse("This user doesn't have any linked Xbox accounts.");
-		if (!(await discordUserPromise).ok) return messageResponse('Failed to fetch Discord user.');
+		if (!(await discordUserPromise).ok) {
+			console.warn(`Failed to fetch Discord user with ID ${userId}:`, (await discordUserPromise).text());
+			return messageResponse('Failed to fetch Discord user.');
+		}
 
 		const discrodUser = (await discordUserPromise.then((res) => res.json())) as APIUser;
 		const xboxAccount = user.defaultXboxAccountId
