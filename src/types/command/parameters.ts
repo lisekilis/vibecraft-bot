@@ -1,10 +1,10 @@
 import {
 	APIApplicationCommandBasicOption,
-	APIApplicationCommandGuildInteraction,
 	APIApplicationCommandOption,
 	APIApplicationCommandSubcommandGroupOption,
 	APIApplicationCommandSubcommandOption,
 	APIMessageComponentInteraction,
+	APIModalSubmitInteraction,
 	ApplicationCommandType,
 	EntryPointCommandHandlerType,
 } from 'discord-api-types/v10';
@@ -16,6 +16,7 @@ import {
 	ChatInputSubcommandExecute,
 	ComponentExecute,
 	MessageCommandExecute,
+	ModalSubmitExecute,
 	Subcommand,
 	SubcommandGroup,
 	UserCommandExecute,
@@ -40,6 +41,7 @@ export interface ChatInputCommandBasicParameters extends BaseCommandParameters<
 	execute: ChatInputCommandExecute;
 	executeComponent?: ComponentExecute<APIMessageComponentInteraction>;
 	executeAutocomplete?: AutocompleteExecute;
+	executeModalSubmit?: ModalSubmitExecute<APIModalSubmitInteraction>;
 }
 
 export interface ChatInputCommandParentParameters extends BaseCommandParameters<ApplicationCommandType.ChatInput, never> {
@@ -52,12 +54,14 @@ export interface UserCommandParameters extends BaseCommandParameters<Application
 	type: ApplicationCommandType.User;
 	execute: UserCommandExecute;
 	executeComponent?: ComponentExecute<APIMessageComponentInteraction>;
+	executeModalSubmit?: ModalSubmitExecute<APIModalSubmitInteraction>;
 }
 
 export interface MessageCommandParameters extends BaseCommandParameters<ApplicationCommandType.Message> {
 	type: ApplicationCommandType.Message;
 	execute: MessageCommandExecute;
 	executeComponent?: ComponentExecute<APIMessageComponentInteraction>;
+	executeModalSubmit?: ModalSubmitExecute<APIModalSubmitInteraction>;
 }
 
 export interface ActivityCommandParameters extends BaseCommandParameters<ApplicationCommandType.PrimaryEntryPoint> {
@@ -77,6 +81,7 @@ export interface SubcommandParameters extends BaseSubcommandParameters<APIApplic
 	execute: ChatInputSubcommandExecute;
 	executeComponent?: ComponentExecute<APIMessageComponentInteraction>;
 	executeAutocomplete?: AutocompleteExecute;
+	executeModalSubmit?: ModalSubmitExecute<APIModalSubmitInteraction>;
 }
 
 export interface SubcommandGroupParameters extends BaseSubcommandParameters<APIApplicationCommandSubcommandGroupOption> {

@@ -2,7 +2,7 @@ import { ApplicationCommandOptionType, ApplicationCommandType, InteractionRespon
 import { command } from '.';
 import { messageResponse } from '../../util/responses';
 import { findOption } from '../../util/options';
-import { getUser } from '../../../helpers/user';
+import { getXboxAccount } from '../../../helpers/user';
 import { createProfileEmbed } from '../../util/profile';
 
 export default command({
@@ -25,14 +25,8 @@ export default command({
 		const discordUser = interaction.member?.user || interaction.user!;
 		const userId = userOption ? userOption.value : discordUser.id;
 
-		const user = await getUser(env, userId);
-		if (!user || !user.xboxAccounts || user.xboxAccounts.length === 0)
-			return messageResponse('No linked Xbox accounts found for this user.');
-
-		const xboxAccount = user.defaultXboxAccountId
-			? user.xboxAccounts?.find((acc) => acc.xboxUserId === user.defaultXboxAccountId) || user.xboxAccounts[0]
-			: user.xboxAccounts[0];
-		if (!xboxAccount) return messageResponse('No linked Xbox accounts found for this user.');
+		const xboxAccount = await getXboxAccount(env, userId);
+		if (!xboxAccount) return messageResponse("This user doesn't have any linked Xbox accounts.");
 
 		const embed = createProfileEmbed(xboxAccount, discordUser);
 		return {

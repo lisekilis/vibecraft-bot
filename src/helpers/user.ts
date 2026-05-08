@@ -1,4 +1,4 @@
-import { UserData, XboxUserData } from '../types';
+import { MinecraftUserData, SkinRenderPose, UserData, XboxUserData } from '../types';
 
 export async function patchUser(env: Env, discordID: string, userData: Partial<UserData>): Promise<void> {
 	const existingUser: UserData = JSON.parse((await env.users.get(discordID)) || `{}`);
@@ -20,6 +20,68 @@ export async function patchUser(env: Env, discordID: string, userData: Partial<U
 
 	console.log('Patching user', discordID, 'with data', newUser);
 	await env.users.put(discordID, JSON.stringify(newUser));
+}
+export function fixUserData(userData: Partial<UserData>): UserData {
+	const defaultUserData: UserData = {
+		xboxAccounts: [],
+		defaultXboxAccountId: undefined,
+	};
+	const fixedXboxAccounts = userData.xboxAccounts
+		? userData.xboxAccounts.map(fixXboxUserData).filter((acc): acc is XboxUserData => acc !== undefined)
+		: defaultUserData.xboxAccounts;
+	return {
+		...defaultUserData,
+		...userData,
+		xboxAccounts: fixedXboxAccounts,
+		defaultXboxAccountId: fixedXboxAccounts
+			? fixedXboxAccounts.some((acc) => acc.xboxUserId === userData.defaultXboxAccountId)
+				? userData.defaultXboxAccountId
+				: fixedXboxAccounts[0].xboxUserId
+			: undefined,
+	};
+}
+function fixXboxUserData(xboxUserData: Partial<XboxUserData>): XboxUserData | undefined {
+	const defaultXboxUserData: XboxUserData = {
+		appDisplayName: '',
+		gameDisplayName: '',
+		gamertag: '',
+		gameProfilePicture: '',
+		preferences: {
+			skinRenderPose: SkinRenderPose.Default,
+		},
+		xboxUserId: '',
+	};
+	if (
+		!xboxUserData.xboxUserId ||
+		!xboxUserData.appDisplayName ||
+		!xboxUserData.gameDisplayName ||
+		!xboxUserData.gamertag ||
+		!xboxUserData.gameProfilePicture
+	)
+		return undefined;
+	return {
+		...defaultXboxUserData,
+		...xboxUserData,
+		preferences: {
+			...defaultXboxUserData.preferences,
+			...xboxUserData.preferences,
+		},
+		minecraftAccount: xboxUserData.minecraftAccount ? fixMinecraftUserData(xboxUserData.minecraftAccount) : undefined,
+	};
+}
+
+function fixMinecraftUserData(minecraftUserData: Partial<MinecraftUserData>): MinecraftUserData | undefined {
+	const defaultMinecraftUserData: MinecraftUserData = {
+		id: '',
+		name: '',
+		skins: [],
+		capes: [],
+	};
+	if (!minecraftUserData.id || !minecraftUserData.name) return undefined;
+	return {
+		...defaultMinecraftUserData,
+		...minecraftUserData,
+	};
 }
 
 export async function deleteUser(env: Env, discordID: string): Promise<void> {
@@ -44,4 +106,31 @@ export async function getUser(env: Env, discordID: string): Promise<UserData | u
 	const userData = await env.users.get(discordID, { type: 'json' });
 	if (!userData) return undefined;
 	return userData as UserData;
+}
+
+/* Gets the Xbox account for a user. If xboxUserId is provided, it will return the account with that ID, otherwise it will return the default account. */
+export async function getXboxAccount(user: UserData, xboxUserId?: string): Promise<XboxUserData | undefined>;
+export async function getXboxAccount(user: Promise<UserData>, xboxUserId?: string): Promise<XboxUserData | undefined>;
+export async function getXboxAccount(env: Env, discordID: string, xboxUserId?: string): Promise<XboxUserData | undefined>;
+export async function getXboxAccount(
+	envOrUser: Env | UserData | Promise<UserData>,
+	discordOrXboxID: string | undefined,
+	xboxUserId?: string,
+): Promise<XboxUserData | undefined> {
+	const user =
+		envOrUser instanceof Promise
+			? await envOrUser
+			: envOrUser instanceof Object && 'users' in envOrUser
+				? await getUser(envOrUser, discordOrXboxID!)
+				: (envOrUser as UserData);
+	if (!user || !user.xboxAccounts || user.xboxAccounts.length === 0) return undefined;
+
+	const accountId = xboxUserId || user.defaultXboxAccountId;
+
+	if (accountId) {
+		const xboxAccount = user.xboxAccounts.find((account) => account.xboxUserId === accountId);
+		if (xboxAccount) return xboxAccount;
+		return user.xboxAccounts[0];
+	}
+	return user.xboxAccounts[0];
 }

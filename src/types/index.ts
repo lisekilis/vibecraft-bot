@@ -37,21 +37,57 @@ export interface XboxUserData {
 	appDisplayName: string;
 	gamertag: string;
 	gameProfilePicture: string;
-	minecraftAccount?: minecraftUserData;
+	minecraftAccount?: MinecraftUserData;
+	preferences: XboxAccountPreferences;
 }
 
-export interface minecraftUserData {
+export interface XboxAccountPreferences {
+	/**The pose to use for rendering the Minecraft skin in the profile embed. */
+	skinRenderPose: SkinRenderPose;
+}
+
+export enum SkinRenderPose {
+	Default = 'default',
+	Marching = 'marching',
+	Walking = 'walking',
+	Crouching = 'crouching',
+	Crossed = 'crossed',
+	CrissCross = 'criss_cross',
+	Ultimate = 'ultimate',
+	Isometric = 'isometric',
+	Cheering = 'cheering',
+	Relaxing = 'relaxing',
+	Trudging = 'trudging',
+	Cowering = 'cowering',
+	Pointing = 'pointing',
+	Lunging = 'lunging',
+	Dungeons = 'dungeons',
+	Facepalm = 'facepalm',
+	Sleeping = 'sleeping',
+	Dead = 'dead',
+	Archer = 'archer',
+	Kicking = 'kicking',
+	Mojavatar = 'mojavatar',
+	Reading = 'reading',
+	HighGround = 'high_ground',
+	Clown = 'clown',
+	Bitzel = 'bitzel',
+	Pixel = 'pixel',
+	Profile = 'profile',
+}
+
+export interface MinecraftUserData {
 	/**The unique identifier of the Minecraft account*/
 	id: string;
 	/**The username of the Minecraft account*/
 	name: string;
 	/**An array of skins associated with the Minecraft account*/
-	skins: minecraftSkinData[];
+	skins: MinecraftSkinData[];
 	/**An array of capes associated with the Minecraft account*/
-	capes: minecraftCapeData[];
+	capes: MinecraftCapeData[];
 }
 
-export interface minecraftSkinData {
+export interface MinecraftSkinData {
 	/**The unique identifier of the skin*/
 	id: string;
 	/**The state of the skin, e.g., ACTIVE or INACTIVE*/
@@ -64,7 +100,7 @@ export interface minecraftSkinData {
 	alias: string;
 }
 
-export interface minecraftCapeData {
+export interface MinecraftCapeData {
 	/**The unique identifier of the cape*/
 	id: string;
 	/**The state of the cape, e.g., ACTIVE or INACTIVE*/

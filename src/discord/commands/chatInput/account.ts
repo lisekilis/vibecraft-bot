@@ -2,7 +2,10 @@ import {
 	APIContainerComponent,
 	APIEmbedImage,
 	APIInteractionResponseChannelMessageWithSource,
+	APILabelComponent,
 	APIMessageTopLevelComponent,
+	APIModalInteractionResponseCallbackComponent,
+	APIModalSubmissionComponent,
 	ApplicationCommandOptionType,
 	ApplicationCommandType,
 	ButtonStyle,
@@ -10,12 +13,14 @@ import {
 	InteractionContextType,
 	InteractionResponseType,
 	MessageFlags,
+	ModalSubmitLabelComponent,
 } from 'discord-api-types/v10';
 import { command, subcommand } from '.';
 import { autocompleteResponse, messageResponse, pongResponse, requestResponse } from '../../util/responses';
-import { deleteUserXboxAccount, getUser } from '../../../helpers/user';
+import { deleteUserXboxAccount, getUser, getXboxAccount } from '../../../helpers/user';
 import { findOption } from '../../util/options';
 import { createProfileEmbed } from '../../util/profile';
+import { ComponentID } from '../../util/components';
 
 const add = subcommand({
 	data: {
@@ -125,20 +130,13 @@ const view = subcommand({
 		return accountAutocomplete(env, interaction.member?.user.id || interaction.user!.id);
 	},
 	execute: async (interaction, env) => {
-		const userDataPromise = getUser(env, interaction.member?.user.id || interaction.user!.id);
-		console.log('Fetching user data for', interaction.member?.user.id || interaction.user!.id);
 		const accountOption = findOption(interaction.data.options[0].options || [], 'account', ApplicationCommandOptionType.String);
-		console.log('Account option:', JSON.stringify(accountOption));
 		if (!accountOption) return messageResponse('No account specified to view.');
 
-		const userData = await userDataPromise;
+		const xboxAccount = await getXboxAccount(env, interaction.member?.user.id || interaction.user!.id, accountOption.value);
+		if (!xboxAccount) return messageResponse('The specified account was not found in your linked accounts.');
 
-		if (!userData || !userData.xboxAccounts || userData.xboxAccounts.length === 0)
-			return messageResponse('You have no linked Minecraft accounts.');
-		const account = userData.xboxAccounts.find((account) => account.xboxUserId === accountOption.value);
-		if (!account) return messageResponse('The specified account was not found in your linked accounts.');
-
-		const embed = createProfileEmbed(account, interaction.user || interaction.member?.user!);
+		const embed = createProfileEmbed(xboxAccount, interaction.user || interaction.member?.user!);
 		console.log('Created embed:', JSON.stringify(embed));
 		const flags = findOption(interaction.data.options[0].options || [], 'ephemeral', ApplicationCommandOptionType.Boolean)?.value
 			? MessageFlags.Ephemeral
@@ -155,6 +153,116 @@ const view = subcommand({
 	},
 });
 
+const preferences = subcommand({
+	data: {
+		name: 'preferences',
+		type: ApplicationCommandOptionType.Subcommand,
+		description: 'Configure your profile preferences',
+		options: [
+			{
+				name: 'account',
+				description: 'Select the account you want to configure preferences for',
+				type: ApplicationCommandOptionType.String,
+				required: true,
+				autocomplete: true,
+				choices: [],
+				// The autocomplete handler will need to fetch the user's linked accounts and return them as choices
+			},
+		],
+	},
+	execute: async (interaction, env) => {
+		const discordUser = interaction.member?.user || interaction.user!;
+		const selectedAccount = findOption(interaction.data.options[0].options || [], 'account', ApplicationCommandOptionType.String)?.value;
+		if (!selectedAccount) return messageResponse('No account specified to configure.');
+
+		const user = await getUser(env, discordUser.id);
+		if (!user || !user.xboxAccounts || user.xboxAccounts.length === 0)
+			return messageResponse('No linked Xbox accounts found for your profile. Please link an account first using `/account add`.');
+		const xboxAccount = await getXboxAccount(user, selectedAccount);
+
+		const components: APIModalInteractionResponseCallbackComponent[] = [
+			{
+				type: ComponentType.Label,
+				label: 'Account',
+				description: 'The account you want to set preferences for',
+				component: {
+					type: ComponentType.StringSelect,
+					custom_id: new ComponentID(ApplicationCommandType.ChatInput, 'account')
+						.setSubcommand('preferences')
+						.setComponent('account')
+						.toString(),
+					options: user.xboxAccounts.map((account) => ({
+						label: account.gamertag,
+						value: account.xboxUserId,
+						description: account.minecraftAccount ? `Minecraft username: ${account.minecraftAccount.name}` : undefined,
+						default: account.xboxUserId === selectedAccount,
+					})),
+					disabled: true, // Disable the account select since the user has already selected an account to configure
+				},
+			},
+		];
+
+		if (xboxAccount?.minecraftAccount) {
+			components.push({
+				type: ComponentType.Label,
+				label: 'Character Pose',
+				description: 'Select a pose for your character on your profile',
+				component: {
+					type: ComponentType.StringSelect,
+					custom_id: new ComponentID(ApplicationCommandType.ChatInput, 'account')
+						.setSubcommand('preferences')
+						.setComponent('pose')
+						.toString(),
+					options: [],
+				},
+			});
+		}
+
+		return {
+			type: InteractionResponseType.Modal,
+			data: {
+				title: 'Account Preferences',
+				custom_id: new ComponentID(ApplicationCommandType.ChatInput, 'account').setSubcommand('preferences').toString(),
+				components,
+			},
+		};
+	},
+	executeAutocomplete: async (interaction, env) => {
+		return accountAutocomplete(env, interaction.member?.user.id || interaction.user!.id);
+	},
+	executeComponent: async (interaction, env) => {
+		return messageResponse('Profile configuration is not implemented yet. Please check back later.');
+	},
+	executeModalSubmit: async (interaction, env) => {
+		const accountComponent = interaction.data.components.find(
+			(component) =>
+				component.type === ComponentType.Label &&
+				component.component.type == ComponentType.StringSelect &&
+				new ComponentID(component.component.custom_id).componentName === 'account',
+		) as (ModalSubmitLabelComponent & { component: { type: ComponentType.StringSelect } }) | undefined;
+		if (!accountComponent) return messageResponse('No account specified to configure.');
+
+		const selectedAccount = accountComponent.component.values[0];
+
+		if (!selectedAccount) return messageResponse('No account specified to configure.');
+
+		const user = await getUser(env, interaction.member?.user.id || interaction.user!.id);
+		if (!user || !user.xboxAccounts || user.xboxAccounts.length === 0)
+			return messageResponse('No linked Xbox accounts found for your profile. Please link an account first using `/account add`.');
+		const xboxAccount = await getXboxAccount(user, selectedAccount);
+		if (!xboxAccount) return messageResponse('The specified account was not found in your linked accounts.');
+
+		if (xboxAccount.minecraftAccount) {
+			const poseComponent = interaction.data.components.find(
+				(component) => component.type === ComponentType.Label && new ComponentID(component.component.custom_id).componentName === 'pose',
+			) as APIContainerComponent | undefined;
+			if (!poseComponent) return messageResponse('No pose component found in the submitted modal.');
+		}
+
+		return messageResponse('Profile configuration is not implemented yet. Please check back later.');
+	},
+});
+
 export default command({
 	type: ApplicationCommandType.ChatInput,
 	data: {
@@ -162,7 +270,7 @@ export default command({
 		description: 'Manage your linked Minecraft accounts',
 		type: ApplicationCommandType.ChatInput,
 	},
-	subcommands: [add, remove, view],
+	subcommands: [add, remove, view, preferences],
 });
 
 async function accountAutocomplete(env: Env, userId: string) {

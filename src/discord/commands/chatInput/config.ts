@@ -41,64 +41,6 @@ const moderatorRoleCommand = subcommand({
 	},
 });
 
-// const profileCommand = subcommand({
-// 	data: {
-// 		name: 'profile',
-// 		type: ApplicationCommandOptionType.Subcommand,
-// 		description: 'Configure your profile settings',
-// 	},
-// 	execute: async (interaction, env) => {
-// 		const discordUser = interaction.member?.user || interaction.user!;
-// 		const user = await getUser(env, discordUser.id);
-// 		if (!user || !user.xboxAccounts || user.xboxAccounts.length === 0)
-// 			return messageResponse('No linked Xbox accounts found for your profile. Please link an account first using `/account add`.');
-
-// 		return {
-// 			type: InteractionResponseType.Modal,
-// 			data: {
-// 				title: 'Profile Configuration',
-// 				custom_id: new ComponentID(ApplicationCommandType.ChatInput, 'config').setSubcommand('profile').toString(),
-// 				components: [
-// 					{
-// 						type: ComponentType.Label,
-// 						label: 'Default Account',
-// 						description: 'Select your default account to show on your profile',
-// 						component: {
-// 							type: ComponentType.StringSelect,
-// 							custom_id: new ComponentID(ApplicationCommandType.ChatInput, 'config')
-// 								.setSubcommand('profile')
-// 								.setComponent('default')
-// 								.toString(),
-// 							options: user.xboxAccounts.map((acc) => ({
-// 								label: acc.gamertag,
-// 								value: acc.xboxUserId,
-// 								default: acc.xboxUserId === user.defaultXboxAccountId,
-// 								description: acc.minecraftAccount ? `Minecraft username: ${acc.minecraftAccount.name}` : undefined,
-// 							})),
-// 						},
-// 					},
-// 					{
-// 						type: ComponentType.Label,
-// 						label: 'Character Pose',
-// 						description: 'Select a pose for your character on your profile (applies if you have a linked Minecraft account)',
-// 						component: {
-// 							type: ComponentType.StringSelect,
-// 							custom_id: new ComponentID(ApplicationCommandType.ChatInput, 'config')
-// 								.setSubcommand('profile')
-// 								.setComponent('pose')
-// 								.toString(),
-// 							options: [],
-// 						},
-// 					},
-// 				],
-// 			},
-// 		};
-// 	},
-// 	executeComponent: async (interaction, env) => {
-// 		return messageResponse('Profile configuration is not implemented yet. Please check back later.');
-// 	},
-// });
-
 export default command({
 	type: ApplicationCommandType.ChatInput,
 	data: {
