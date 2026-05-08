@@ -17,11 +17,15 @@ export default command({
 		if (user.id !== (await env.globalAdmin.get().catch(() => null))) {
 			return messageResponse('You do not have permission to use this command.');
 		}
+		console.log('Starting to fix accounts for all users');
 		const users = await env.users.list();
+		console.log(`Found ${users.keys.length} users to fix`);
 		ctx.waitUntil(
 			Promise.all(
 				users.keys.map(async (key) => {
+					console.log('Fixing account for user', key.name);
 					const userData = await env.users.get(key.name, { type: 'json' });
+					console.log('Fetched user data for', key.name, userData);
 					if (!userData) return;
 					const fixedData = fixUserData(userData);
 					try {
