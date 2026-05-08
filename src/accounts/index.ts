@@ -1,4 +1,5 @@
-import { patchUser } from '../helpers/user';
+import { getUser, getXboxAccount, patchUser } from '../helpers/user';
+import { SkinRenderPose } from '../types';
 import {
 	MicrosoftErrorResponse,
 	MinecraftOwnershipResponse,
@@ -55,6 +56,8 @@ export async function callbackHandler(request: Request, env: Env): Promise<Respo
 	if (!authData) return new Response('Invalid or expired link', { status: 400 });
 
 	const { discordId, codeVerifier } = JSON.parse(authData);
+
+	const userPromise = getUser(env, discordId);
 
 	const redirectUri = `${url.origin}/auth/callback`;
 
@@ -122,6 +125,10 @@ export async function callbackHandler(request: Request, env: Env): Promise<Respo
 
 	const hasMinecraft = await checkMinecraftOwnership(minecraftData.access_token);
 
+	const user = await userPromise;
+
+	const existantXboxAccount = user ? await getXboxAccount(user, xboxProfileData.profileUsers[0].id) : null;
+
 	if (!hasMinecraft) {
 		await patchUser(env, discordId, {
 			xboxAccounts: [
@@ -131,6 +138,9 @@ export async function callbackHandler(request: Request, env: Env): Promise<Respo
 					appDisplayName: xboxProfileData.profileUsers[0].settings.find((setting) => setting.id === 'AppDisplayName')?.value || 'Unknown',
 					gamertag: xboxProfileData.profileUsers[0].settings.find((setting) => setting.id === 'Gamertag')?.value || 'Unknown',
 					gameProfilePicture: xboxProfileData.profileUsers[0].settings.find((setting) => setting.id === 'GameDisplayPicRaw')?.value || '',
+					preferences: existantXboxAccount?.preferences || {
+						skinRenderPose: SkinRenderPose.Default,
+					},
 				},
 			],
 		});
@@ -155,6 +165,9 @@ export async function callbackHandler(request: Request, env: Env): Promise<Respo
 				gamertag: xboxProfileData.profileUsers[0].settings.find((setting) => setting.id === 'Gamertag')?.value || 'Unknown',
 				gameProfilePicture: xboxProfileData.profileUsers[0].settings.find((setting) => setting.id === 'GameDisplayPicRaw')?.value || '',
 				minecraftAccount: await MinecraftProfileResponse.json(),
+				preferences: existantXboxAccount?.preferences || {
+					skinRenderPose: SkinRenderPose.Default,
+				},
 			},
 		],
 	});
