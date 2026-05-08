@@ -13,7 +13,7 @@ export default command({
 		integration_types: [ApplicationIntegrationType.UserInstall],
 	},
 	execute: async (interaction, env, ctx) => {
-		const defferedResponse = requestResponse(interaction.id, interaction.token, {
+		const deferredResponse = requestResponse(interaction.id, interaction.token, {
 			type: InteractionResponseType.DeferredChannelMessageWithSource,
 		});
 		const user = interaction.member?.user || interaction.user!;
@@ -23,22 +23,16 @@ export default command({
 		console.log('Starting to fix accounts for all users');
 		const users = await env.users.list();
 		console.log(`Found ${users.keys.length} users to fix`);
-
-		const result = Promise.all(
-			users.keys.map(async (key) => {
-				console.log('Fixing account for user', key.name);
-				const userData = await env.users.get(key.name, { type: 'json' });
-				console.log('Fetched user data for', key.name, userData);
-				if (!userData) return;
-				const fixedData = fixUserData(userData);
-				try {
-					return await env.users.put(key.name, JSON.stringify(fixedData));
-				} catch (err) {
-					console.error('Error fixing user data for', key.name, JSON.stringify(err));
-				}
-			}),
-		);
-		await defferedResponse;
+		await deferredResponse;
+		const result = users.keys.map(async (key) => {
+			console.log('Fixing account for user', key.name);
+			const userData = await env.users.get(key.name, { type: 'json' });
+			console.log('Fetched user data for', key.name, userData);
+			if (!userData) return;
+			const fixedData = fixUserData(userData);
+			await env.users.put(key.name, JSON.stringify(fixedData));
+			console.log('Finished fixing account for user', key.name);
+		});
 		const startedResponse = requestResponse(
 			interaction.id,
 			interaction.token,
@@ -46,7 +40,7 @@ export default command({
 		);
 
 		await startedResponse;
-		await result;
+		await Promise.all(result);
 		console.log('Finished fixing accounts for all users');
 		return {
 			type: InteractionResponseType.UpdateMessage,
