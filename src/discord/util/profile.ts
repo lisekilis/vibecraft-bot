@@ -1,15 +1,16 @@
 import { APIEmbed, APIEmbedFooter, APIEmbedImage, APIUser, RouteBases } from 'discord-api-types/v10';
-import { XboxUserData } from '../../types';
+import { SkinRenderPose, XboxUserData } from '../../types';
 
 export function createProfileEmbed(account: XboxUserData, discordUser: APIUser): APIEmbed {
 	let image: APIEmbedImage | undefined;
 	let thumbnail: APIEmbedImage | undefined;
 	let footer: APIEmbedFooter | undefined;
 	const title = account.minecraftAccount ? account.minecraftAccount.name : account.gameDisplayName;
+	const pose = account.preferences.skinRenderPose || SkinRenderPose.Default;
 
 	if (account.minecraftAccount) {
 		const renderedSkin = {
-			relaxedUrl: `https://starlightskins.lunareclipse.studio/render/relaxing/${account.minecraftAccount.id}/full`,
+			relaxedUrl: `https://starlightskins.lunareclipse.studio/render/${pose}/${account.minecraftAccount.id}/full`,
 			headUrl: `https://starlightskins.lunareclipse.studio/render/head/${account.minecraftAccount.id}/full`,
 		};
 
