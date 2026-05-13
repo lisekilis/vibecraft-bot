@@ -8,7 +8,7 @@ import { command, subcommand, subcommandGroup } from '.';
 import { ephemeralResponse } from '../../util/responses';
 import { verifyAdmin } from '../../util/verify';
 import { isGuildInteraction } from 'discord-api-types/utils';
-import { patchConfig } from '../../../helpers/config';
+import { patchGuildConfig } from '../../../helpers/config';
 
 const moderatorRoleCommand = subcommand({
 	data: {
@@ -35,7 +35,7 @@ const moderatorRoleCommand = subcommand({
 
 		if (!role || role.type !== ApplicationCommandOptionType.Role) return ephemeralResponse('Please provide a valid role');
 
-		await patchConfig(env, interaction.guild_id, { moderatorRoleID: role.value });
+		await patchGuildConfig(env, interaction.guild_id, { moderatorRoleID: role.value });
 
 		return ephemeralResponse(`Moderator role set to <@&${role.value}>`);
 	},

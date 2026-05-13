@@ -1,25 +1,24 @@
 export * from './command';
 
 export interface GuildConfig {
+	/** List of administrators stored as discord user IDs */
+	admins?: string[];
 	moderatorRoleID?: string;
-	servers?: mcServerData[];
 }
 
-export interface mcServerData {
+export interface MinecraftServerData {
 	/**The unique identifier of the Minecraft server*/
 	id: string;
 	/**The name of the Minecraft server*/
 	name: string;
+	/** Discord Ids of the administrators for the Minecraft server */
+	admins: string[];
+	/** Discord Ids of the users whitelisted for the Minecraft server */
+	whitelist: string[];
 	/**The IP address of the Minecraft server*/
 	ip: string;
 	/**The port number of the Minecraft server*/
 	port: number;
-	/**The version of the Minecraft server*/
-	version: string;
-	/**The status of the Minecraft server, e.g., ONLINE or OFFLINE*/
-	status: string;
-	/**The WebSocket URL for the Minecraft server*/
-	socket: URL;
 }
 
 export const defaultConfig: GuildConfig = {
@@ -27,9 +26,19 @@ export const defaultConfig: GuildConfig = {
 };
 
 export interface UserData {
+	id: string;
 	xboxAccounts?: XboxUserData[];
 	defaultXboxAccountId?: string;
+	/** IDs of the servers the user is a member of */
+	servers?: string[];
 }
+
+export const defaultUserData: UserData = {
+	id: '',
+	xboxAccounts: [],
+	defaultXboxAccountId: undefined,
+	servers: [],
+};
 
 export interface XboxUserData {
 	xboxUserId: string;

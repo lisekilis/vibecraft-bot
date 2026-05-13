@@ -59,6 +59,10 @@
 			"binding": "links",
 			"id": "f64b0722e4a84c259f85a0b72633f297",
 		},
+		{
+			"binding": "servers",
+			"id": "e4bdb2cfa62c496b824362afe91bcc01",
+		},
 	],
 
 	/**

@@ -9,7 +9,6 @@ import {
 import { command } from '.';
 import { messageResponse, pongResponse, requestResponse } from '../../util/responses';
 import { fixUserData } from '../../../helpers/user';
-import { getDefaultAutoSelectFamily } from 'node:net';
 
 export default command({
 	type: ApplicationCommandType.ChatInput,

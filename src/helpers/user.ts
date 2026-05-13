@@ -1,8 +1,8 @@
-import { MinecraftUserData, SkinRenderPose, UserData, XboxUserData } from '../types';
+import { defaultUserData, GuildConfig, MinecraftServerData, MinecraftUserData, SkinRenderPose, UserData, XboxUserData } from '../types';
 
 export async function patchUser(env: Env, discordID: string, userData: Partial<UserData>): Promise<void> {
 	const existingUser: UserData = JSON.parse((await env.users.get(discordID)) || `{}`);
-	let newUser: UserData = { ...existingUser, ...userData };
+	let newUser: UserData = { ...existingUser, ...userData, id: discordID };
 	if (existingUser) {
 		if (userData.xboxAccounts) {
 			const existingXboxAccounts = existingUser.xboxAccounts || [];
@@ -22,10 +22,6 @@ export async function patchUser(env: Env, discordID: string, userData: Partial<U
 	await env.users.put(discordID, JSON.stringify(newUser));
 }
 export function fixUserData(userData: Partial<UserData>): UserData {
-	const defaultUserData: UserData = {
-		xboxAccounts: [],
-		defaultXboxAccountId: undefined,
-	};
 	const fixedXboxAccounts = userData.xboxAccounts
 		? userData.xboxAccounts.map(fixXboxUserData).filter((acc): acc is XboxUserData => acc !== undefined)
 		: defaultUserData.xboxAccounts;
@@ -102,10 +98,8 @@ export async function deleteUserXboxAccount(env: Env, discordID: string, xboxUse
 	await env.users.put(discordID, JSON.stringify(existingUser));
 }
 
-export async function getUser(env: Env, discordID: string): Promise<UserData | undefined> {
-	const userData = await env.users.get(discordID, { type: 'json' });
-	if (!userData) return undefined;
-	return userData as UserData;
+export async function getUser(env: Env, discordID: string): Promise<UserData | null> {
+	return env.users.get<UserData>(discordID, { type: 'json' });
 }
 
 /* Gets the Xbox account for a user. If xboxUserId is provided, it will return the account with that ID, otherwise it will return the default account. */
@@ -133,4 +127,22 @@ export async function getXboxAccount(
 		return user.xboxAccounts[0];
 	}
 	return user.xboxAccounts[0];
+}
+
+//this function is used to check if the used has privelaged access to the app's management features (e.g. add their servers and stuff)
+export async function hasPrivilegedAccess(userId: string, guild: Promise<GuildConfig>): Promise<boolean>;
+export async function hasPrivilegedAccess(userId: string, guild: GuildConfig): Promise<boolean>;
+export async function hasPrivilegedAccess(userId: string, guild: GuildConfig | Promise<GuildConfig>): Promise<boolean> {
+	const resolvedGuild = guild instanceof Promise ? await guild : guild;
+	return resolvedGuild.admins?.includes(userId) || false;
+}
+
+function isWhitelistedForServer(user: UserData, server: MinecraftServerData): boolean {
+	if (!server.whitelist || server.whitelist.length === 0) return false;
+	return server.whitelist.includes(user.id);
+}
+
+function getWhitelistedServers(user: UserData, servers: MinecraftServerData[]): MinecraftServerData[] {
+	const userServers = user.servers || [];
+	return servers.filter((server) => userServers.includes(server.id) && isWhitelistedForServer(user, server));
 }

@@ -8,4 +8,12 @@ export default command({
 		description: 'Manage the whitelist for the server',
 		type: ApplicationCommandType.ChatInput,
 	},
+	execute: async (interaction, env) => {
+		return {
+			type: 4,
+			data: {
+				content: 'This command is not implemented yet.',
+			},
+		};
+	},
 });
