@@ -1,4 +1,5 @@
 import { defaultUserData, GuildConfig, MinecraftServerData, MinecraftUserData, SkinRenderPose, UserData, XboxUserData } from '../types';
+import { getMinecraftServer } from './server';
 
 export async function patchUser(env: Env, discordID: string, userData: Partial<UserData>): Promise<void> {
 	const existingUser: UserData = JSON.parse((await env.users.get(discordID)) || `{}`);
@@ -137,12 +138,19 @@ export async function hasPrivilegedAccess(userId: string, guild: GuildConfig | P
 	return resolvedGuild.admins?.includes(userId) || false;
 }
 
-function isWhitelistedForServer(user: UserData, server: MinecraftServerData): boolean {
+export function isWhitelistedForServer(user: UserData, server: MinecraftServerData): boolean {
 	if (!server.whitelist || server.whitelist.length === 0) return false;
 	return server.whitelist.includes(user.id);
 }
 
-function getWhitelistedServers(user: UserData, servers: MinecraftServerData[]): MinecraftServerData[] {
+export async function getWhitelistedServers(env: Env, user: UserData): Promise<MinecraftServerData[]> {
 	const userServers = user.servers || [];
-	return servers.filter((server) => userServers.includes(server.id) && isWhitelistedForServer(user, server));
+	const servers = await Promise.all(userServers.map((serverId) => getMinecraftServer(env, serverId)));
+	return servers.filter((server) => server !== null && isWhitelistedForServer(user, server)) as MinecraftServerData[];
+}
+
+export async function getAdminServers(env: Env, user: UserData): Promise<MinecraftServerData[]> {
+	const userServers = user.servers || [];
+	const servers = await Promise.all(userServers.map((serverId) => getMinecraftServer(env, serverId)));
+	return servers.filter((server) => server !== null && server.admins?.includes(user.id)) as MinecraftServerData[];
 }
