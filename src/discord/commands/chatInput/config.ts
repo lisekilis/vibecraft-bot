@@ -8,7 +8,8 @@ import { command, subcommand, subcommandGroup } from '.';
 import { ephemeralResponse } from '../../util/responses';
 import { verifyAdmin } from '../../util/verify';
 import { isGuildInteraction } from 'discord-api-types/utils';
-import { patchGuildConfig } from '../../../helpers/config';
+import { getGuildConfig, patchGuildConfig } from '../../../helpers/config';
+import { hasPrivilegedAccess } from '../../../helpers/user';
 
 const moderatorRoleCommand = subcommand({
 	data: {
@@ -29,7 +30,10 @@ const moderatorRoleCommand = subcommand({
 
 		if (!isGuildInteraction(interaction)) return ephemeralResponse('This command can only be used in a server');
 
-		if (!verifyAdmin(interaction.member)) return ephemeralResponse('You do not have permission to use this command');
+		const guild = getGuildConfig(env, interaction.guild_id);
+
+		if (!verifyAdmin(interaction.member) || !(await hasPrivilegedAccess(interaction.member.user.id, guild)))
+			return ephemeralResponse('You do not have permission to use this command');
 
 		const role = interaction.data.options[0].options?.find((option) => option.name === 'role');
 

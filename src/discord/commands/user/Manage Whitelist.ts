@@ -1,15 +1,18 @@
-import {
-	APIModalInteractionResponseCallbackComponent,
-	ApplicationCommandType,
-	ApplicationIntegrationType,
-	ComponentType,
-	InteractionContextType,
-} from 'discord-api-types/v10';
+import { ApplicationCommandType, ApplicationIntegrationType, InteractionContextType, InteractionResponseType } from 'discord-api-types/v10';
 import { command } from '.';
 import { messageResponse } from '../../util/responses';
-import { ComponentID } from '../../util/components';
 import { getAdminServers, getUser, hasPrivilegedAccess } from '../../../helpers/user';
 import { getGuildConfig } from '../../../helpers/config';
+import { WhitelistModal } from '../../util/whitelist';
+import { ComponentID } from '../../util/components';
+
+const commandData = {
+	type: ApplicationCommandType.User,
+	name: 'Manage Whitelist',
+	description: '',
+	integration_types: [ApplicationIntegrationType.UserInstall],
+	contexts: [InteractionContextType.Guild],
+};
 
 export default command({
 	type: ApplicationCommandType.User,
@@ -35,24 +38,24 @@ export default command({
 
 		const servers = await getAdminServers(env, user);
 
-		const whitelistModal: APIModalInteractionResponseCallbackComponent[] = [
-			{
-				type: ComponentType.Label,
-				label: 'server',
-				component: {
-					type: ComponentType.StringSelect,
-					custom_id: new ComponentID(ApplicationCommandType.User, 'Manage Whitelist').setComponent('server').toString(),
-					options: [
-						{
-							label: 'Example server',
-							value: 'example_server_id',
-							description: 'This is an example server.',
-						},
-					],
-				},
-			},
-		];
+		const modalData = new WhitelistModal(new ComponentID(ApplicationCommandType.User, 'Manage Whitelist').toString(),servers, user)
+
+		return {
+			type: InteractionResponseType.Modal,
+			data: modalData.modalData,
+		};
 
 		return messageResponse('This command is not implemented yet.');
 	},
+	executeModalSubmit: async (interaction, env) => {
+
+
+
+
+
+		return{
+			type: InteractionResponseType.Modal
+			data:
+		}
+	}
 });
