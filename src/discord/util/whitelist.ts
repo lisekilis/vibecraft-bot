@@ -7,10 +7,13 @@ import {
 	APIUserSelectComponent,
 	APIStringSelectComponent,
 	APIModalSubmitInteraction,
+	CannotSendMessagesToThisUserErrorCodes,
 } from 'discord-api-types/v10';
 import { MinecraftServerData, UserData } from '../../types';
 import { command } from '../commands/chatInput';
 import { ComponentID } from './components';
+import { getUser } from '../../helpers/user';
+import { getMinecraftServer } from '../../helpers/server';
 
 export class WhitelistModal {
 	userSelectComponent: APILabelComponent & { component: APIUserSelectComponent } = {
@@ -82,27 +85,33 @@ export class WhitelistModal {
 	}
 }
 
-function parseWhitelistModalSubmit(interaction: APIModalSubmitInteraction) {
+export function parseWhitelistModalSubmit(interaction: APIModalSubmitInteraction) {
 	const labels = interaction.data.components.filter((component) => component.type == ComponentType.Label);
 	const userSelectComponent = labels.find((component) => component.component.custom_id == 'userSelectComponent')?.component;
 	const serverSelectComponent = labels.find((component) => component.component.custom_id == 'serverSelectComponent')?.component;
 
 	if (!userSelectComponent || userSelectComponent?.type != ComponentType.UserSelect) {
 		console.warn('Tried parsing Whitelist Modal, but found no User Select Component');
-		return undefined;
+		return { userId: undefined, servers: undefined };
 	}
 
 	if (!serverSelectComponent || serverSelectComponent?.type != ComponentType.StringSelect) {
 		console.warn('Tried parsing Whitelist Modal, but found no Server Select Component');
-		return undefined;
+		return { userId: undefined, servers: undefined };
 	}
 
 	const userId = userSelectComponent.values[0];
-	const servers = serverSelectComponent.custom_id.includes('disabled') ? undefined : serverSelectComponent.values;
-	const se;
+	const servers = serverSelectComponent.values;
 
 	return {
 		userId,
 		servers,
 	};
 }
+
+export async function addToWhitelist(env: Env, userId: string, serverId: string) {
+	const user = await getUser(env, userId);
+	const server = await getMinecraftServer(env, userId);
+	if (!user || !server) return undefined;
+}
+export async function removeWhitelist() {}

@@ -1,10 +1,11 @@
-import { ApplicationCommandType, ApplicationIntegrationType, InteractionContextType, InteractionResponseType } from 'discord-api-types/v10';
+import { ApplicationCommandType, ApplicationIntegrationType, InteractionContextType, InteractionResponseType, MessageFlags } from 'discord-api-types/v10';
 import { command } from '.';
 import { messageResponse } from '../../util/responses';
 import { getAdminServers, getUser, hasPrivilegedAccess } from '../../../helpers/user';
 import { getGuildConfig } from '../../../helpers/config';
-import { WhitelistModal } from '../../util/whitelist';
+import { parseWhitelistModalSubmit, WhitelistModal } from '../../util/whitelist';
 import { ComponentID } from '../../util/components';
+import { parse } from 'node:path';
 
 const commandData = {
 	type: ApplicationCommandType.User,
@@ -48,13 +49,22 @@ export default command({
 		return messageResponse('This command is not implemented yet.');
 	},
 	executeModalSubmit: async (interaction, env) => {
+		const userPromise = getUser(env, interaction.user?.id || interaction.member?.user.id!)
+		const {userId, servers} = parseWhitelistModalSubmit(interaction)
+		if (!userId || !servers) return messageResponse("Not enough information was provided", MessageFlags.Ephemeral)
 
+		const user = await userPromise
+		if (!user) return messageResponse("Invoking user not found!", MessageFlags.Ephemeral)
+		const adminServers = getAdminServers(env, user)
 
+		servers.forEach(server => {
+
+		});
 
 
 
 		return{
-			type: InteractionResponseType.Modal
+			type: InteractionResponseType.Modal,
 			data:
 		}
 	}
