@@ -1,19 +1,15 @@
 import {
 	APIModalInteractionResponseCallbackData,
 	ComponentType,
-	ApplicationCommandType,
 	SelectMenuDefaultValueType,
 	APILabelComponent,
 	APIUserSelectComponent,
 	APIStringSelectComponent,
 	APIModalSubmitInteraction,
-	CannotSendMessagesToThisUserErrorCodes,
 } from 'discord-api-types/v10';
 import { MinecraftServerData, UserData } from '../../types';
-import { command } from '../commands/chatInput';
-import { ComponentID } from './components';
-import { getUser } from '../../helpers/user';
-import { getMinecraftServer } from '../../helpers/server';
+import { getUser, patchUser } from '../../helpers/user';
+import { getMinecraftServer, patchMinecraftServer } from '../../helpers/server';
 
 export class WhitelistModal {
 	userSelectComponent: APILabelComponent & { component: APIUserSelectComponent } = {
@@ -109,9 +105,28 @@ export function parseWhitelistModalSubmit(interaction: APIModalSubmitInteraction
 	};
 }
 
-export async function addToWhitelist(env: Env, userId: string, serverId: string) {
+export async function grantWhitelist(env: Env, userId: string, serverId: string) {
 	const user = await getUser(env, userId);
 	const server = await getMinecraftServer(env, userId);
 	if (!user || !server) return undefined;
+
+	if (!server.whitelist.includes(user.id)) server.whitelist.push(user.id);
+	if (!user.servers?.includes(server.id)) user.servers?.push(server.id);
+
+	const userPatchPromise = patchUser(env, user.id, user);
+	const serverPatchPromise = patchMinecraftServer(env, serverId, server);
+	return Promise.allSettled([userPatchPromise, serverPatchPromise]);
 }
-export async function removeWhitelist() {}
+
+export async function revokeWhitelist(env: Env, userId: string, serverId: string) {
+	const user = await getUser(env, userId);
+	const server = await getMinecraftServer(env, userId);
+	if (!user || !server) return undefined;
+
+	server.whitelist = server.whitelist.filter((userId) => userId != user.id);
+	user.servers = user.servers?.filter((serverId) => serverId != server.id);
+
+	const userPatchPromise = patchUser(env, user.id, user);
+	const serverPatchPromise = patchMinecraftServer(env, serverId, server);
+	return Promise.allSettled([userPatchPromise, serverPatchPromise]);
+}

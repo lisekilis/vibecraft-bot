@@ -1,11 +1,16 @@
-import { ApplicationCommandType, ApplicationIntegrationType, InteractionContextType, InteractionResponseType, MessageFlags } from 'discord-api-types/v10';
+import {
+	ApplicationCommandType,
+	ApplicationIntegrationType,
+	InteractionContextType,
+	InteractionResponseType,
+	MessageFlags,
+} from 'discord-api-types/v10';
 import { command } from '.';
-import { messageResponse } from '../../util/responses';
+import { messageResponse, pongResponse } from '../../util/responses';
 import { getAdminServers, getUser, hasPrivilegedAccess } from '../../../helpers/user';
 import { getGuildConfig } from '../../../helpers/config';
-import { parseWhitelistModalSubmit, WhitelistModal } from '../../util/whitelist';
+import { grantWhitelist, parseWhitelistModalSubmit, revokeWhitelist, WhitelistModal } from '../../util/whitelist';
 import { ComponentID } from '../../util/components';
-import { parse } from 'node:path';
 
 const commandData = {
 	type: ApplicationCommandType.User,
@@ -39,7 +44,7 @@ export default command({
 
 		const servers = await getAdminServers(env, user);
 
-		const modalData = new WhitelistModal(new ComponentID(ApplicationCommandType.User, 'Manage Whitelist').toString(),servers, user)
+		const modalData = new WhitelistModal(new ComponentID(ApplicationCommandType.User, 'Manage Whitelist').toString(), servers, user);
 
 		return {
 			type: InteractionResponseType.Modal,
@@ -48,24 +53,21 @@ export default command({
 
 		return messageResponse('This command is not implemented yet.');
 	},
-	executeModalSubmit: async (interaction, env) => {
-		const userPromise = getUser(env, interaction.user?.id || interaction.member?.user.id!)
-		const {userId, servers} = parseWhitelistModalSubmit(interaction)
-		if (!userId || !servers) return messageResponse("Not enough information was provided", MessageFlags.Ephemeral)
+	executeModalSubmit: async (interaction, env, ctx) => {
+		//This kinda assumes that the whitelist will get updated propperly with no errors which is possibly suboptimal
+		const userPromise = getUser(env, interaction.user?.id || interaction.member?.user.id!);
+		const { userId, servers } = parseWhitelistModalSubmit(interaction);
+		if (!userId || !servers) return messageResponse('Not enough information was provided', MessageFlags.Ephemeral);
 
-		const user = await userPromise
-		if (!user) return messageResponse("Invoking user not found!", MessageFlags.Ephemeral)
-		const adminServers = getAdminServers(env, user)
+		const user = await userPromise;
+		if (!user) return messageResponse('Invoking user not found!', MessageFlags.Ephemeral);
+		const adminServers = await getAdminServers(env, user);
 
-		servers.forEach(server => {
-
+		adminServers.forEach((server) => {
+			if (servers.includes(server.id)) ctx.waitUntil(grantWhitelist(env, userId, server.id));
+			else ctx.waitUntil(revokeWhitelist(env, userId, server.id));
 		});
 
-
-
-		return{
-			type: InteractionResponseType.Modal,
-			data:
-		}
-	}
+		return messageResponse(`Updated the whitelist for <@${userId}>`);
+	},
 });
