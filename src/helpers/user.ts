@@ -130,7 +130,11 @@ export async function getXboxAccount(
 	return user.xboxAccounts[0];
 }
 
-//this function is used to check if the used has privelaged access to the app's management features (e.g. add their servers and stuff)
+/**
+ * This function is used to check if the used has privelaged access to the app's management features (e.g. add their servers and stuff)
+ * @param userId
+ * @param guild
+ */
 export async function hasPrivilegedAccess(userId: string, guild: Promise<GuildConfig>): Promise<boolean>;
 export async function hasPrivilegedAccess(userId: string, guild: GuildConfig): Promise<boolean>;
 export async function hasPrivilegedAccess(userId: string, guild: GuildConfig | Promise<GuildConfig>): Promise<boolean> {

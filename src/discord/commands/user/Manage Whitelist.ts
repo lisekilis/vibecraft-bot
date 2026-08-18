@@ -32,19 +32,22 @@ export default command({
 	execute: async (interaction, env) => {
 		const discordUser = interaction.member?.user || interaction.user!;
 		const userPromise = getUser(env, discordUser.id);
-		const targetUser = getUser(env, interaction.data.target_id);
 		const targetDiscordUser = interaction.data.resolved.users[interaction.data.target_id];
+		const targetUserPromise = getUser(env, targetDiscordUser.id);
 
 		const guild = getGuildConfig(env, interaction.guild_id!);
 
-		if (!(await hasPrivilegedAccess(discordUser.id, guild))) return messageResponse('You do not have permission to use this command.');
+		if (!(await hasPrivilegedAccess(discordUser.id, guild)))
+			return messageResponse('You do not have permission to use this command.', MessageFlags.Ephemeral);
 
 		const user = await userPromise;
-		if (!user) return messageResponse('User data not found.');
+		if (!user) return messageResponse('User data not found.', MessageFlags.Ephemeral);
+		const targetUser = await targetUserPromise;
+		if (!targetUser) return messageResponse('Target user data not found.', MessageFlags.Ephemeral);
 
 		const servers = await getAdminServers(env, user);
 
-		const modalData = new WhitelistModal(new ComponentID(ApplicationCommandType.User, 'Manage Whitelist').toString(), servers, user);
+		const modalData = new WhitelistModal(new ComponentID(ApplicationCommandType.User, 'Manage Whitelist').toString(), servers, targetUser);
 
 		return {
 			type: InteractionResponseType.Modal,
