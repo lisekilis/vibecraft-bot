@@ -93,7 +93,10 @@ const adminSubcommand = subcommand({
 
 		const guild = getGuildConfig(env, interaction.guild_id);
 
-		if (!verifyAdmin(interaction.member) || !(await hasPrivilegedAccess(interaction.member.user.id, guild)))
+		if (
+			(!verifyAdmin(interaction.member) || !(await hasPrivilegedAccess(interaction.member.user.id, guild))) &&
+			!verifyAdmin(interaction.member)
+		)
 			return ephemeralResponse('You do not have permission to use this command');
 
 		const targetUser = subcommandOptions?.find((option) => option.name === 'user');
